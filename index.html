@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="vi">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Chào mừng Giáng Sinh</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+		<style>
+			:root {
+				--red: #e63946;
+				--green: #2a9d8f;
+				--gold: #ffd166;
+				--snow: rgba(255, 255, 255, 0.9);
+				--bg-1: #0b132b;
+				--bg-2: #1c2541;
+				--text: #e7ecef;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { height: 100%; }
+			body {
+				margin: 0;
+				color: var(--text);
+				background: radial-gradient(1200px 800px at 20% -20%, #2d3142 0%, transparent 60%),
+										radial-gradient(900px 600px at 120% 0%, #1b263b 0%, transparent 60%),
+										linear-gradient(160deg, var(--bg-1), var(--bg-2));
+				font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+				overflow-x: hidden;
+			}
+
+			.snow { pointer-events: none; position: fixed; inset: 0; overflow: hidden; }
+			.flake {
+				position: absolute;
+				top: -5vh;
+				color: var(--snow);
+				opacity: .9;
+				filter: drop-shadow(0 0 6px rgba(255,255,255,.6));
+				animation: fall linear var(--dur) infinite;
+				transform: translate3d(var(--x), -10vh, 0) scale(var(--s));
+			}
+			@keyframes fall {
+				0%   { transform: translate3d(var(--x), -10vh, 0) scale(var(--s)) rotate(0deg); }
+				100% { transform: translate3d(calc(var(--x) + var(--sw)), 110vh, 0) scale(var(--s)) rotate(360deg); }
+			}
+
+			.hero {
+				min-height: 100dvh;
+				display: grid;
+				place-items: center;
+				text-align: center;
+				padding: 64px 20px;
+				position: relative;
+				isolation: isolate;
+			}
+
+			.card {
+				max-width: 780px;
+				width: 100%;
+				padding: clamp(24px, 4vw, 48px);
+				border-radius: 20px;
+				background: rgba(255,255,255,0.06);
+				backdrop-filter: blur(6px);
+				border: 1px solid rgba(255,255,255,0.12);
+				box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 40px rgba(255,255,255,.04);
+			}
+
+			h1 {
+				margin: 0 0 10px;
+				font-family: "Mountains of Christmas", cursive;
+				font-size: clamp(44px, 8vw, 82px);
+				line-height: 1.05;
+				letter-spacing: 1px;
+				color: #fff;
+				text-shadow: 0 6px 0 rgba(0,0,0,.25), 0 0 20px rgba(255,255,255,.2);
+			}
+			.sub {
+				margin: 0 0 26px;
+				font-size: clamp(16px, 2.3vw, 20px);
+				color: #eef3f5;
+				opacity: .92;
+			}
+
+			.twinkle {
+				display: inline-block;
+				background: linear-gradient(90deg, var(--gold), #fff, var(--gold));
+				background-size: 200% 100%;
+				-webkit-background-clip: text; background-clip: text;
+				-webkit-text-fill-color: transparent;
+				animation: shine 3.2s linear infinite;
+			}
+			@keyframes shine { to { background-position-x: -200%; } }
+
+			.cta {
+				margin-top: 22px;
+				display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+			}
+			.btn {
+				appearance: none;
+				border: none;
+				text-decoration: none;
+				cursor: pointer;
+				padding: 14px 22px;
+				border-radius: 12px;
+				font-weight: 600;
+				font-size: 16px;
+				letter-spacing: .2px;
+				transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+				color: #0b132b;
+				background: linear-gradient(180deg, #e8f7f1, #c7f2e3);
+				box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			}
+			.btn:hover { transform: translateY(-2px); }
+			.btn:active { transform: translateY(0); }
+
+			.btn-primary {
+				background: linear-gradient(180deg, #34d399, #10b981);
+				color: #062021;
+			}
+			.btn-accent {
+				background: linear-gradient(180deg, #ffd166, #f4b942);
+				color: #3a2a00;
+			}
+
+			.badges { margin-top: 18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+			.badge {
+				padding: 6px 10px;
+				border-radius: 999px;
+				font-size: 12px;
+				color: #102a43;
+				background: rgba(255,255,255,0.8);
+				border: 1px solid rgba(255,255,255,0.6);
+			}
+
+			footer { text-align:center; padding: 24px; opacity: .7; font-size: 13px; }
+		</style>
+	</head>
+	<body>
+		<div class="snow" aria-hidden="true" id="snow"></div>
+		<main class="hero">
+			<section class="card" role="region" aria-label="Lời chúc Giáng Sinh">
+				<h1>Chào mừng mùa <span class="twinkle">Giáng Sinh</span>!</h1>
+				<p class="sub">Chúc bạn và gia đình một mùa lễ an lành, ấm áp và tràn ngập yêu thương. Hãy cùng khám phá điều kỳ diệu của đêm Noel nhé!</p>
+
+				<div class="cta">
+					<a class="btn btn-primary" href="tree.html">🎄 Đến trang Cây Thông</a>
+					<!-- <a class="btn btn-accent" href="index.html">✨ Về trang chính</a> -->
+				</div>
+
+				<div class="badges" aria-hidden="true">
+					<span class="badge">Merry Christmas</span>
+					<span class="badge">Happy Holidays</span>
+					<span class="badge">Peace • Love • Joy</span>
+				</div>
+			</section>
+		</main>
+
+		<footer>© <span id="year"></span> Giáng Sinh vui vẻ!
+			<div class="credit">design by KayT</div>
+		</footer>
+
+		<script>
+			document.getElementById('year').textContent = new Date().getFullYear();
+
+			const snow = document.getElementById('snow');
+			const total = Math.min(120, Math.max(50, Math.floor(window.innerWidth / 12)));
+			const glyphs = ['❄','✦','✴','✧','❅','❆'];
+			for (let i = 0; i < total; i++) {
+				const el = document.createElement('span');
+				el.className = 'flake';
+				const s = (Math.random() * 0.8 + 0.3).toFixed(2);
+				const x = (Math.random() * 100).toFixed(2) + 'vw';
+				const sw = ((Math.random() - 0.5) * 20).toFixed(2) + 'vw';
+				const dur = (Math.random() * 6 + 6).toFixed(2) + 's';
+				el.style.setProperty('--s', s);
+				el.style.setProperty('--x', x);
+				el.style.setProperty('--sw', sw);
+				el.style.setProperty('--dur', dur);
+				el.style.left = x;
+				el.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+				snow.appendChild(el);
+			}
+		</script>
+	</body>
+	</html>

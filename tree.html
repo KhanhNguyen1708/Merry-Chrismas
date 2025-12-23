@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Christmas Tree</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Festive fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Merriweather:wght@400;700;900&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #02030a;
+      --bg2: #0d0f1f;
+      --glow: rgba(255, 215, 0, 0.35);
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(1200px 700px at 50% 18%, rgba(13, 15, 31, 0.95), rgba(2, 3, 10, 0.95) 70%),
+        linear-gradient(180deg, rgba(10, 12, 24, 0.85) 0%, rgba(2, 3, 10, 0.95) 100%);
+      color: #fff;
+      font-family: "Merriweather", "Segoe UI", sans-serif;
+    }
+    /* Animated aurora behind the canvas */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(80% 100% at 15% 10%, rgba(0, 200, 230, 0.10), rgba(0, 0, 0, 0) 60%),
+        radial-gradient(70% 90% at 85% 15%, rgba(160, 80, 220, 0.09), rgba(0, 0, 0, 0) 55%),
+        conic-gradient(from 210deg at 50% 50%, rgba(0,0,0,0), rgba(30, 210, 140, 0.08), rgba(0,0,0,0) 25%);
+      filter: blur(12px);
+      opacity: 0.5;
+      background-size: 140% 140%, 150% 150%, 200% 200%;
+      animation: auroraShift 32s ease-in-out infinite;
+    }
+    /* Pause/soften aurora when performance is low */
+    body.lowperf::before {
+      animation-play-state: paused;
+      opacity: 0.35;
+      filter: blur(8px);
+    }
+    /* Vignette overlay for depth */
+    body::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(60% 50% at 50% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.65) 100%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, rgba(0,0,0,0.02) 2px 4px);
+      background-blend-mode: normal, overlay;
+    }
+    @keyframes auroraShift {
+      0% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+      50% { background-position: 50% 20%, 60% 30%, 100% 100%; }
+      100% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+    }
+    /* Keep canvas above decorative overlays */
+    canvas {
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Enhanced festive background container */
+    #bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* Twinkling starfield */
+    #bg-layer .bg-stars {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(2px 2px at 8% 12%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 18% 28%, rgba(255,255,255,0.8) 50%, transparent 51%),
+        radial-gradient(2px 2px at 26% 10%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 34% 22%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 42% 6%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 50% 26%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 58% 14%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 66% 30%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 74% 8%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 82% 24%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 12% 42%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 22% 56%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 32% 48%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 44% 60%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 56% 44%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 66% 58%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 76% 40%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 88% 54%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 20% 74%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 36% 86%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 52% 78%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(2px 2px at 68% 90%, rgba(255,255,255,0.85) 50%, transparent 51%),
+        radial-gradient(2px 2px at 84% 76%, rgba(255,255,255,0.9) 50%, transparent 51%);
+      animation: twinkle 6s ease-in-out infinite;
+      opacity: 0.7;
+    }
+    .lowperf #bg-layer .bg-stars {
+      animation-play-state: paused;
+      opacity: 0.5;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.9; }
+    }
+    /* Soft drifting bokeh glows */
+    #bg-layer .bg-bokeh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(300px 300px at 18% 32%, rgba(255,255,255,0.06), transparent 60%),
+        radial-gradient(240px 240px at 78% 24%, rgba(255,215,0,0.06), transparent 60%),
+        radial-gradient(260px 260px at 10% 78%, rgba(120,200,255,0.06), transparent 60%);
+      animation: bokehDrift 40s ease-in-out infinite alternate;
+      filter: blur(4px);
+      opacity: 0.8;
+    }
+    .lowperf #bg-layer .bg-bokeh {
+      animation-play-state: paused;
+      opacity: 0.6;
+      filter: blur(3px);
+    }
+    @keyframes bokehDrift {
+      0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+      100% { background-position: 6% 4%, -4% 6%, 3% -5%; }
+    }
+    /* Ground haze for depth */
+    #bg-layer .bg-ground {
+      position: absolute;
+      left: 0; right: 0; bottom: 0; height: 45vh;
+      background:
+        radial-gradient(80% 100% at 50% 100%, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.75) 100%),
+        radial-gradient(60% 50% at 50% 95%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.0) 60%);
+      mix-blend-mode: normal;
+    }
+
+    /* ===== Greeting Modal ===== */
+    #greeting-modal {
+      position: fixed;
+      inset: 0;
+      display: none; /* toggled to flex when shown */
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+    }
+    #greeting-modal .content {
+      max-width: 640px;
+      margin: 0 16px;
+      padding: 24px 28px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #121427, #050611);
+      border: 1px solid rgba(255,211,107,0.35);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 35px var(--glow) inset;
+      text-align: center;
+      color: #ffffff;
+      animation: modalPop 220ms ease-out;
+    }
+    #greeting-modal .message {
+      font-family: "Dancing Script", cursive;
+      font-size: 28px;
+      line-height: 1.35;
+      color: #ffd36b;
+      margin: 0 0 14px 0;
+      text-shadow: 0 0 12px rgba(255,211,107,0.5);
+      white-space: pre-wrap;
+    }
+    #greeting-modal .hint {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-top: 6px;
+    }
+    #greeting-modal .close-btn {
+      margin-top: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      background: #ffd36b;
+      color: #121212;
+    }
+    @keyframes modalPop {
+      from { transform: translateY(6px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* ===== Input Modal (Beautified) ===== */
+    #input-modal {
+      position: fixed;
+      inset: 0;
+      display: none; /* toggled to flex in JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+    }
+    #input-modal[aria-hidden="false"] { display: flex; }
+    #input-modal .input-card {
+      width: min(92vw, 520px);
+      color: #fff;
+      position: relative;
+      border-radius: 16px;
+      padding: 20px 20px 16px;
+      background: linear-gradient(180deg, rgba(15,16,22,0.92), rgba(11,12,18,0.92));
+      box-shadow: 0 20px 48px rgba(0,0,0,0.55), 0 0 50px rgba(255,211,107,0.12) inset;
+      border: 1px solid rgba(255,211,107,0.28);
+      animation: modalPop 220ms ease-out;
+      overflow: hidden;
+    }
+    #input-modal .input-card::before {
+      content: "";
+      position: absolute; inset: -1px;
+      border-radius: 16px;
+      padding: 1px; /* gradient border thickness */
+      background: linear-gradient(135deg, rgba(255,211,107,0.8), rgba(255,245,196,0.2) 30%, rgba(255,211,107,0.6) 70%, rgba(255,245,196,0.15));
+      /* -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); */
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events: none;
+    }
+    #input-modal .input-title {
+      font-size: 22px; font-weight: 900;
+      font-family: 'Merriweather', serif;
+      text-align: center; margin-bottom: 14px;
+      background: linear-gradient(180deg, #fff6d1, #ffd36b 60%, #f5b64a);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      text-shadow: 0 2px 10px rgba(255,211,107,0.35);
+    }
+    #input-modal .mode-toggle { display:flex; gap:10px; justify-content:center; margin-bottom: 10px; }
+    #input-modal .pill {
+      padding: 8px 12px; border-radius: 999px; font-weight: 800; font-size: 13px;
+      background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer; user-select: none; transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    #input-modal .pill.active { background: rgba(255,211,107,0.2); border-color: rgba(255,211,107,0.7); color: #ffd36b; }
+    #input-modal .close-x {
+      position:absolute; right: 10px; top: 10px; width: 34px; height: 34px; border-radius: 10px;
+      display:grid; place-items:center; border:1px solid rgba(255,255,255,0.12); color:#fff; background: rgba(255,255,255,0.06);
+      cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .06s ease; font-weight:900;
+    }
+    #input-modal .close-x:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,211,107,0.45); color:#ffd36b; }
+    #input-modal .close-x:active { transform: translateY(1px); }
+    #input-modal .input-field input {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      box-sizing: border-box; /* prevent right-side overflow */
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.14);
+      background: rgba(22,24,32,0.92);
+      background-clip: padding-box; /* avoid border bleed artifacts */
+      color: #fff;
+      outline: none;
+      font-size: 16px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+      transition: border-color .15s ease, box-shadow .15s ease;
+      appearance: none; /* standard property for compatibility */
+      -webkit-appearance: none; /* iOS edge quirks */
+    }
+    #input-modal .input-field input::placeholder { color: rgba(255,255,255,0.55); }
+    #input-modal .input-field input:focus {
+      border-color: rgba(255,211,107,0.9);
+      box-shadow: 0 0 0 3px rgba(255,211,107,0.25), inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    #input-modal .input-hint {
+      margin-top: 8px; text-align: center; font-size: 12.5px; color: rgba(255,255,255,0.75);
+    }
+    #input-modal .input-error {
+      color: #ff8a80; font-size: 13px; min-height: 18px; margin-top: 10px; text-align: center;
+    }
+    #input-modal .actions {
+      display: flex; gap: 14px; justify-content: center; margin-top: 14px;
+    }
+    #input-modal .btn {
+      border: none; cursor: pointer; border-radius: 12px;
+      padding: 12px 18px; font-weight: 900; font-size: 16px;
+      transition: transform .06s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+    #input-modal .btn.primary {
+      background: linear-gradient(180deg, #ffe08f, #ffd36b 60%, #f5b64a);
+      color: #4a2a00; box-shadow: 0 10px 18px rgba(255,211,107,0.35);
+    }
+    #input-modal .btn.primary:hover { box-shadow: 0 12px 24px rgba(255,211,107,0.45); }
+    #input-modal .btn.ghost { background: rgba(42,47,58,0.95); color: #fff; }
+    #input-modal .btn:active { transform: translateY(1px); }
+
+    /* ===== Music Prompt ===== */
+    #music-prompt {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 11;
+      display: none;
+    }
+    #music-prompt button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 999px;
+      background: #ffd36b;
+      color: #121212;
+      font-weight: 700;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+      cursor: pointer;
+    }
+
+    /* ===== Music Control (Pause/Play) ===== */
+    #music-control {
+      position: fixed;
+      right: 12px;
+      bottom: 56px; /* above the prompt */
+      z-index: 11;
+      display: none; /* shown when audio is ready */
+    }
+    #music-control button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 999px;
+      background: #303447;
+      color: #ffd36b;
+      font-weight: 700;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+      cursor: pointer;
+    }
+
+    /* Prevent canvas jump when soft keyboard opens */
+    body.kb-open canvas { position: fixed !important; inset: 0; }
+    @supports (height: 100svh) {
+      /* Ensure modal always fits stable viewport on mobile */
+      #input-modal { min-height: 100svh; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="bg-layer">
+  <div class="bg-stars"></div>
+  <div class="bg-bokeh"></div>
+  <div class="bg-ground"></div>
+  <!-- aurora & vignette remain via body::before/::after -->
+  </div>
+
+<!-- Greeting modal -->
+<div id="greeting-modal" aria-hidden="true">
+  <div class="content">
+    <div class="message">Chúc mừng Giáng Sinh!</div>
+    <button class="close-btn" type="button">Đóng</button>
+    <div class="hint">Chạm vào hộp quà để xem lời chúc</div>
+  </div>
+  <!-- clicking the backdrop closes -->
+  </div>
+
+<!-- Input modal for name or birthday (beautified) -->
+<div id="input-modal" aria-hidden="true">
+  <div class="input-card">
+    <button id="input-close" class="close-x" type="button">×</button>
+    <div class="input-title">Nhập tên hoặc ngày sinh (dd/mm)</div>
+    <div class="mode-toggle">
+      <div id="pill-name" class="pill">Tên</div>
+      <div id="pill-date" class="pill">Ngày sinh (dd/mm)</div>
+    </div>
+    <div class="input-field">
+      <input id="input-combined" type="text" placeholder="Ví dụ: Hoa hoặc 25/12" />
+      <!-- <div class="input-hint">Mẹo: Nhập 25/12 để xem điều bất ngờ ✨</div> -->
+      <div id="input-error" class="input-error">&nbsp;</div>
+    </div>
+    <div class="actions">
+      <button id="input-ok" type="button" class="btn primary">Xác nhận</button>
+      <button id="input-cancel" type="button" class="btn ghost">Hủy</button>
+    </div>
+  </div>
+  </div>
+
+<!-- Music play prompt (shown if autoplay is blocked) -->
+<div id="music-prompt" aria-hidden="true">
+  <button id="music-play-btn" type="button">Bật nhạc</button>
+  </div>
+
+<!-- Music toggle control (pause/resume) -->
+<div id="music-control" aria-hidden="true">
+  <button id="music-toggle-btn" type="button">Tắt nhạc</button>
+  </div>
+
+<!-- Inline greeting banner -->
+<div id="inline-greeting" aria-hidden="true" style="display:none; position:fixed; left:50%; top:18px; transform:translateX(-50%); z-index:900; padding:10px 16px; border-radius:12px; background:rgba(15,16,22,0.82); color:#ffd36b; font-weight:900; box-shadow:0 10px 24px rgba(0,0,0,0.35); border:2px solid rgba(255,211,107,0.65); font-size:16px; text-align:center; white-space:pre-wrap; max-width:92vw;">
+</div>
+
+<!-- Three.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+/* ================= CONFIG (matching christmas.html style) ================= */
+const CONFIG = {
+  treeHeight: 70,
+  treeBaseRadius: 35,
+  goldCount: 1600,
+  redCount: 280,
+  giftCount: 120
+};
+// Layout offsets to raise elements
+const TREE_Y_OFFSET = 12; // raise tree by 12 units
+const TITLE_Y_OFFSET = 10; // raise title by 10 units
+
+/* ================= DEVICE DETECTION ================= */
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 600;
+// External sleigh image (PNG with transparency)
+const SLEIGH_IMAGE = 'Santa1.png';
+// Sleigh style: 'classic' (red+gold) or 'ornate' (gold scrollwork)
+const SLEIGH_STYLE = 'ornate';
+
+/* ================= SCENE ================= */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 18, 110);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+renderer.setSize(window.innerWidth, window.innerHeight);
+let initialPixelRatio = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+let currentPixelRatio = initialPixelRatio;
+renderer.setPixelRatio(currentPixelRatio);
+document.body.appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+
+/* ================= MOBILE KEYBOARD / RESIZE GUARD ================= */
+let keyboardLock = false;
+const baseViewportHeight = window.innerHeight;
+function safeResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+if (window.visualViewport && typeof window.visualViewport.addEventListener === 'function') {
+  const vv = window.visualViewport;
+  vv.addEventListener('resize', () => {
+    const shrink = vv.height < baseViewportHeight - 80; // heuristic threshold
+    if (shrink) {
+      if (!keyboardLock) {
+        keyboardLock = true;
+        document.body.classList.add('kb-open');
+      }
+    } else {
+      if (keyboardLock) {
+        keyboardLock = false;
+        document.body.classList.remove('kb-open');
+        safeResize();
+      }
+    }
+  });
+}
+
+/* ================= TEXTURES ================= */
+function createCustomTexture(type) {
+  const canvas = document.createElement('canvas');
+  // Use higher resolution for sleigh, trail, and 2D fireplace art
+  if (type === 'sleigh' || type === 'sleigh_trail' || type === 'fireplace2d') {
+    canvas.width = 256; canvas.height = 256;
+  } else {
+    canvas.width = 128; canvas.height = 128;
+  }
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  if (type === 'gold_glow') {
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+    grd.addColorStop(0, '#ffffff');
+    grd.addColorStop(0.25, '#fff6d1');
+    grd.addColorStop(0.55, '#ffd36b');
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd; ctx.fillRect(0, 0, 128, 128);
+  } else if (type === 'red_light') {
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 50);
+    grd.addColorStop(0, '#ffdddd');
+    grd.addColorStop(0.35, '#e53935');
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd; ctx.fillRect(0, 0, 128, 128);
+  } else if (type === 'gift_red') {
+    ctx.fillStyle = '#c62828';
+    ctx.fillRect(20, 20, 88, 88);
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(54, 20, 20, 88);
+    ctx.fillRect(20, 54, 88, 20);
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, 88, 88);
+  } else if (type === 'gift_green') {
+    ctx.fillStyle = '#1e7f5a';
+    ctx.fillRect(20, 20, 88, 88);
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(54, 20, 20, 88);
+    ctx.fillRect(20, 54, 88, 20);
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, 88, 88);
+  } else if (type === 'snowflake') {
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 50);
+    grd.addColorStop(0.0, 'rgba(255,255,255,0.95)');
+    grd.addColorStop(0.5, 'rgba(240,240,255,0.55)');
+    grd.addColorStop(1.0, 'rgba(255,255,255,0.0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (type === 'santa') {
+    // Simple festive Santa emoji with soft glow
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    glow.addColorStop(0, 'rgba(255, 245, 200, 0.45)');
+    glow.addColorStop(1, 'rgba(255, 245, 200, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, 58, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(255,211,107,0.6)'; ctx.shadowBlur = 10;
+    ctx.font = '96px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji"';
+    ctx.fillText('🎅', cx, cy);
+  } else if (type === 'sleigh') {
+    // Glow halo
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvas.width * 0.42);
+    glow.addColorStop(0, 'rgba(255, 235, 180, 0.45)');
+    glow.addColorStop(1, 'rgba(255, 235, 180, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, canvas.width * 0.41, 0, Math.PI * 2); ctx.fill();
+
+    if (SLEIGH_STYLE === 'ornate') {
+      // Ornate gold sleigh with scrollwork and green cushion
+      const baseX = cx - 36, baseY = cy + 8;
+      const grdGold = ctx.createLinearGradient(baseX, baseY - 28, baseX + 96, baseY + 12);
+      grdGold.addColorStop(0, '#f7e08b');
+      grdGold.addColorStop(0.5, '#eac157');
+      grdGold.addColorStop(1, '#d9a93a');
+      ctx.fillStyle = grdGold;
+      ctx.strokeStyle = '#ffd36b';
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = 'rgba(255, 211, 107, 0.6)';
+      ctx.shadowBlur = 12;
+
+      // Curved body
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.quadraticCurveTo(baseX - 10, baseY - 26, baseX + 18, baseY - 30);
+      ctx.quadraticCurveTo(baseX + 50, baseY - 28, baseX + 80, baseY - 22);
+      ctx.quadraticCurveTo(baseX + 86, baseY - 14, baseX + 70, baseY - 4);
+      ctx.quadraticCurveTo(baseX + 38, baseY + 8, baseX + 16, baseY + 8);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      // Scrollwork front curl
+      ctx.beginPath();
+      ctx.moveTo(baseX + 84, baseY - 18);
+      ctx.quadraticCurveTo(baseX + 96, baseY - 8, baseX + 88, baseY);
+      ctx.quadraticCurveTo(baseX + 82, baseY + 6, baseX + 76, baseY);
+      ctx.stroke();
+
+      // Gold runners (ornate)
+      ctx.beginPath();
+      ctx.moveTo(baseX - 4, baseY + 4);
+      ctx.quadraticCurveTo(baseX + 12, baseY + 22, baseX + 30, baseY + 22);
+      ctx.moveTo(baseX + 36, baseY + 4);
+      ctx.quadraticCurveTo(baseX + 50, baseY + 26, baseX + 68, baseY + 26);
+      ctx.stroke();
+
+      // Green cushion
+      ctx.fillStyle = '#1e7f5a';
+      ctx.beginPath();
+      ctx.moveTo(baseX + 10, baseY - 20);
+      ctx.quadraticCurveTo(baseX + 34, baseY - 14, baseX + 62, baseY - 18);
+      ctx.lineTo(baseX + 62, baseY - 22);
+      ctx.lineTo(baseX + 10, baseY - 24);
+      ctx.closePath();
+      ctx.fill();
+
+      // Harness line
+      ctx.strokeStyle = 'rgba(255,211,107,0.85)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(baseX + 70, baseY - 14);
+      ctx.quadraticCurveTo(baseX + 98, baseY - 16, baseX + 128, baseY - 18);
+      ctx.stroke();
+
+      // Reindeer helper (subtle, gold-lined)
+      const drawDeer = (dx, dy, scale = 1) => {
+        ctx.save(); ctx.translate(dx, dy); ctx.scale(scale, scale);
+        ctx.fillStyle = '#8d6e63'; ctx.strokeStyle = '#f5c15a'; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(16, -2, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.arc(20, 0, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f5c15a';
+        ctx.beginPath(); ctx.moveTo(17, -6); ctx.lineTo(21, -12); ctx.moveTo(17, -6); ctx.lineTo(21, -2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-6, 8); ctx.lineTo(-8, 16); ctx.moveTo(2, 8); ctx.lineTo(0, 16); ctx.stroke();
+        ctx.restore();
+      };
+      drawDeer(baseX + 136, baseY - 20, 1.0);
+      drawDeer(baseX + 164, baseY - 24, 0.98);
+
+      // Front twinkle
+      const star = ctx.createRadialGradient(baseX + 180, baseY - 24, 0, baseX + 180, baseY - 24, 10);
+      star.addColorStop(0, 'rgba(255, 250, 200, 0.9)');
+      star.addColorStop(1, 'rgba(255, 250, 200, 0)');
+      ctx.fillStyle = star; ctx.beginPath(); ctx.arc(baseX + 180, baseY - 24, 10, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // Classic red+gold sleigh (previous design)
+      const baseX = cx - 40, baseY = cy + 12;
+      const grdRed = ctx.createLinearGradient(baseX, baseY - 24, baseX + 86, baseY + 8);
+      grdRed.addColorStop(0, '#b71c1c');
+      grdRed.addColorStop(0.5, '#d32f2f');
+      grdRed.addColorStop(1, '#f44336');
+      ctx.fillStyle = grdRed;
+      ctx.strokeStyle = '#ffd36b';
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = 'rgba(255, 211, 107, 0.6)';
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.quadraticCurveTo(baseX - 8, baseY - 22, baseX + 18, baseY - 26);
+      ctx.lineTo(baseX + 66, baseY - 26);
+      ctx.quadraticCurveTo(baseX + 78, baseY - 20, baseX + 78, baseY - 12);
+      ctx.lineTo(baseX + 40, baseY + 2);
+      ctx.quadraticCurveTo(baseX + 24, baseY + 8, baseX + 14, baseY + 8);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+
+      ctx.strokeStyle = '#f5c15a'; ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(baseX - 2, baseY + 6);
+      ctx.quadraticCurveTo(baseX + 6, baseY + 18, baseX + 24, baseY + 18);
+      ctx.moveTo(baseX + 32, baseY + 6);
+      ctx.quadraticCurveTo(baseX + 42, baseY + 22, baseX + 60, baseY + 22);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.moveTo(baseX + 12, baseY - 24);
+      ctx.quadraticCurveTo(baseX + 36, baseY - 18, baseX + 64, baseY - 22);
+      ctx.lineTo(baseX + 64, baseY - 26);
+      ctx.lineTo(baseX + 12, baseY - 26);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255,211,107,0.8)'; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(baseX + 78, baseY - 18);
+      ctx.quadraticCurveTo(baseX + 104, baseY - 20, baseX + 132, baseY - 22); ctx.stroke();
+
+      const drawDeer = (dx, dy, scale = 1) => {
+        ctx.save(); ctx.translate(dx, dy); ctx.scale(scale, scale);
+        ctx.fillStyle = '#8d6e63'; ctx.strokeStyle = '#f5c15a'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(16, -2, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.arc(20, 0, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f5c15a'; ctx.beginPath(); ctx.moveTo(17, -6); ctx.lineTo(21, -12); ctx.moveTo(17, -6); ctx.lineTo(21, -2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-6, 8); ctx.lineTo(-8, 16); ctx.moveTo(2, 8); ctx.lineTo(0, 16); ctx.stroke();
+        ctx.restore();
+      };
+      drawDeer(baseX + 140, baseY - 22, 1.0);
+      drawDeer(baseX + 168, baseY - 26, 0.98);
+
+      const star = ctx.createRadialGradient(baseX + 184, baseY - 26, 0, baseX + 184, baseY - 26, 10);
+      star.addColorStop(0, 'rgba(255, 250, 200, 0.9)'); star.addColorStop(1, 'rgba(255, 250, 200, 0)');
+      ctx.fillStyle = star; ctx.beginPath(); ctx.arc(baseX + 184, baseY - 26, 10, 0, Math.PI * 2); ctx.fill();
+    }
+
+  } else if (type === 'sleigh_glow') {
+    // Circular glow halo for the sleigh sprite
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvas.width * 0.45);
+    glow.addColorStop(0.0, 'rgba(255, 235, 180, 0.55)');
+    glow.addColorStop(0.35, 'rgba(255, 225, 150, 0.35)');
+    glow.addColorStop(1.0, 'rgba(255, 225, 150, 0.0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, canvas.width * 0.45, 0, Math.PI * 2); ctx.fill();
+  } else if (type === 'sleigh_trail') {
+    // Soft elongated magical trail glow
+    const trail = ctx.createRadialGradient(cx - 30, cy, 0, cx, cy, canvas.width * 0.35);
+    trail.addColorStop(0.0, 'rgba(255, 230, 160, 0.35)');
+    trail.addColorStop(0.4, 'rgba(255, 215, 120, 0.22)');
+    trail.addColorStop(1.0, 'rgba(255, 215, 120, 0.0)');
+    ctx.fillStyle = trail;
+    ctx.beginPath(); ctx.arc(cx, cy, canvas.width * 0.35, 0, Math.PI * 2); ctx.fill();
+  } else if (type === 'fire') {
+    // Stylized flame shape with warm gradient
+    const grd = ctx.createRadialGradient(cx, cy + 10, 8, cx, cy - 10, 50);
+    grd.addColorStop(0.0, 'rgba(255, 245, 200, 0.95)');
+    grd.addColorStop(0.35, 'rgba(255, 200, 110, 0.85)');
+    grd.addColorStop(0.7, 'rgba(255, 120, 60, 0.6)');
+    grd.addColorStop(1.0, 'rgba(255, 80, 40, 0.0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 48);
+    ctx.quadraticCurveTo(cx + 22, cy - 18, cx + 10, cy + 18);
+    ctx.quadraticCurveTo(cx, cy + 40, cx - 10, cy + 18);
+    ctx.quadraticCurveTo(cx - 22, cy - 18, cx, cy - 48);
+    ctx.closePath();
+    ctx.fill();
+  } else if (type === 'fire_glow') {
+    // Circular orange glow for fire ambience
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvas.width * 0.5);
+    glow.addColorStop(0.0, 'rgba(255, 190, 90, 0.55)');
+    glow.addColorStop(0.5, 'rgba(255, 140, 60, 0.28)');
+    glow.addColorStop(1.0, 'rgba(255, 120, 40, 0.0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, canvas.width * 0.5, 0, Math.PI * 2); ctx.fill();
+  } else if (type === 'fireplace2d') {
+    // 2D fireplace facade (transparent background)
+    ctx.save();
+    ctx.translate(cx, cy + 8);
+    // Colors
+    const brick = '#7a4a3a';
+    const darkBrick = '#5c372a';
+    const mortar = 'rgba(255,255,255,0.08)';
+    const shadow = 'rgba(0,0,0,0.25)';
+    // Hearth base
+    ctx.fillStyle = brick;
+    roundRect(ctx, -88, 52, 176, 18, 6, true, false);
+    // Pillars
+    ctx.fillStyle = darkBrick;
+    roundRect(ctx, -82, -26, 24, 84, 4, true, false);
+    roundRect(ctx, 58, -26, 24, 84, 4, true, false);
+    // Mantel
+    ctx.fillStyle = brick;
+    roundRect(ctx, -78, -40, 156, 18, 6, true, false);
+    // Inner firebox
+    ctx.fillStyle = '#101014';
+    roundRect(ctx, -56, -22, 112, 70, 8, true, false);
+    // Simple brick lines
+    ctx.strokeStyle = mortar; ctx.lineWidth = 1;
+    for (let y = -20; y < 50; y += 10) {
+      ctx.beginPath(); ctx.moveTo(-80, y); ctx.lineTo(80, y); ctx.stroke();
+    }
+    // Soft shadow under mantel
+    const g = ctx.createLinearGradient(0, -22, 0, -8);
+    g.addColorStop(0, 'rgba(0,0,0,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(-70, -22, 140, 14);
+    ctx.restore();
+    // Helper to draw rounded rect
+    function roundRect(c, x, y, w, h, r, fill, stroke){
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.lineTo(x + w - r, y);
+      c.quadraticCurveTo(x + w, y, x + w, y + r);
+      c.lineTo(x + w, y + h - r);
+      c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      c.lineTo(x + r, y + h);
+      c.quadraticCurveTo(x, y + h, x, y + h - r);
+      c.lineTo(x, y + r);
+      c.quadraticCurveTo(x, y, x + r, y);
+      c.closePath();
+      if (fill) c.fill(); if (stroke) c.stroke();
+    }
+  }
+  return new THREE.CanvasTexture(canvas);
+}
+const textures = {
+  gold: createCustomTexture('gold_glow'),
+  red: createCustomTexture('red_light'),
+  gift: createCustomTexture('gift_red'),
+  giftGreen: createCustomTexture('gift_green'),
+  snow: createCustomTexture('snowflake'),
+  sleigh: createCustomTexture('sleigh'),
+  sleighGlow: createCustomTexture('sleigh_glow'),
+  sleighTrail: createCustomTexture('sleigh_trail'),
+  fire: createCustomTexture('fire'),
+  fireGlow: createCustomTexture('fire_glow'),
+  fireplace2d: createCustomTexture('fireplace2d'),
+};
+
+/* ================= MUSIC AUTOPLAY ================= */
+let playlist = [];
+let audioEl = null;
+let audioUnlocked = false;
+
+async function loadPlaylist() {
+  let text = '';
+  try {
+    const resp = await fetch('music.txt');
+    text = await resp.text();
+  } catch (_) {
+    try {
+      const resp2 = await fetch('default.txt');
+      text = await resp2.text();
+    } catch (e) {
+      text = '';
+    }
+  }
+  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+  playlist = lines.map(line => {
+    if (/^https?:\/\//i.test(line)) return line;
+    // Assume local file under MUSIC_PLAYLIST
+    return 'MUSIC_PLAYLIST/' + line;
+  });
+}
+
+function pickRandomTrack() {
+  if (!playlist.length) return null;
+  const i = Math.floor(Math.random() * playlist.length);
+  return playlist[i];
+}
+
+function setupAudio(src) {
+  if (!src) return;
+  if (audioEl) {
+    try { audioEl.pause(); } catch {}
+  }
+  audioEl = new Audio(src);
+  audioEl.preload = 'auto';
+  audioEl.crossOrigin = 'anonymous';
+  audioEl.volume = 0.6;
+  audioEl.addEventListener('play', () => hideMusicPrompt());
+  audioEl.addEventListener('play', updateMusicToggleUI);
+  audioEl.addEventListener('pause', updateMusicToggleUI);
+  // Optionally keep playing next random track when one ends
+  audioEl.addEventListener('ended', () => {
+    const next = pickRandomTrack();
+    if (next) {
+      setupAudio(next);
+      tryAutoplay();
+    }
+  });
+  showMusicControl();
+  updateMusicToggleUI();
+}
+
+function showMusicPrompt() {
+  const prompt = document.getElementById('music-prompt');
+  prompt.style.display = 'block';
+  prompt.setAttribute('aria-hidden', 'false');
+}
+function hideMusicPrompt() {
+  const prompt = document.getElementById('music-prompt');
+  prompt.style.display = 'none';
+  prompt.setAttribute('aria-hidden', 'true');
+}
+
+async function tryAutoplay() {
+  if (!audioEl) return;
+  try {
+    await audioEl.play();
+    audioUnlocked = true;
+    updateMusicToggleUI();
+  } catch (e) {
+    // Autoplay likely blocked
+    showMusicPrompt();
+    updateMusicToggleUI();
+  }
+}
+
+// Unlock on first user interaction anywhere on the page
+window.addEventListener('pointerdown', () => {
+  if (!audioUnlocked && audioEl) {
+    audioEl.play().then(() => { audioUnlocked = true; }).catch(() => { /* keep prompt */ });
+  }
+}, { once: true });
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // Hook play button
+  const btn = document.getElementById('music-play-btn');
+  btn.addEventListener('click', () => { if (audioEl) { audioEl.play().catch(() => {}); } });
+  // Hook toggle button
+  const toggleBtn = document.getElementById('music-toggle-btn');
+  toggleBtn.addEventListener('click', () => {
+    if (!audioEl) return;
+    if (audioEl.paused) {
+      audioEl.play().catch(() => {});
+    } else {
+      audioEl.pause();
+    }
+  });
+  // Load and start
+  await loadPlaylist();
+  const src = pickRandomTrack();
+  if (src) { setupAudio(src); tryAutoplay(); }
+});
+
+function showMusicControl() {
+  const ctrl = document.getElementById('music-control');
+  ctrl.style.display = 'block';
+  ctrl.setAttribute('aria-hidden', 'false');
+}
+function hideMusicControl() {
+  const ctrl = document.getElementById('music-control');
+  ctrl.style.display = 'none';
+  ctrl.setAttribute('aria-hidden', 'true');
+}
+function updateMusicToggleUI() {
+  const btn = document.getElementById('music-toggle-btn');
+  if (!btn) return;
+  if (!audioEl) {
+    hideMusicControl();
+    return;
+  }
+  showMusicControl();
+  btn.textContent = audioEl.paused ? 'Bật nhạc' : 'Tắt nhạc';
+}
+
+// Switch to a random track immediately (user gesture safe)
+function switchRandomTrack() {
+  const next = pickRandomTrack();
+  if (!next) return;
+  setupAudio(next);
+  if (audioEl) {
+    audioEl.play().catch(() => { /* ignore; prompt/UI already available */ });
+  }
+}
+
+/* ================= GREETINGS LOADER + MODAL ================= */
+let greetings = [];
+async function loadGreetings() {
+  try {
+    const resp = await fetch('greetings.txt');
+    const text = await resp.text();
+    greetings = text.split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+  } catch (e) {
+    // Fallback messages if file not available
+    greetings = [
+      'Merry Christmas! Wishing you joy and peace.',
+      'Chúc Giáng Sinh an lành và hạnh phúc!',
+      'May your days be merry and bright.',
+    ];
+  }
+}
+function getRandomGreeting() {
+  if (!greetings || greetings.length === 0) return 'Merry Christmas!';
+  const idx = Math.floor(Math.random() * greetings.length);
+  return greetings[idx];
+}
+function showGreeting(msg) {
+  const modal = document.getElementById('greeting-modal');
+  const msgEl = modal.querySelector('.message');
+  msgEl.textContent = msg;
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
+}
+function hideGreeting() {
+  const modal = document.getElementById('greeting-modal');
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden', 'true');
+}
+// Wire modal close actions
+window.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('greeting-modal');
+  const btn = modal.querySelector('.close-btn');
+  btn.addEventListener('click', hideGreeting);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) hideGreeting();
+  });
+});
+
+/* ================= INPUT MODAL (Name / Birthday) ================= */
+function openInputModal() {
+  const m = document.getElementById('input-modal');
+  if (!m) return;
+  const combinedEl = document.getElementById('input-combined');
+  const errEl = document.getElementById('input-error');
+  // reset mode toggle (auto)
+  try {
+    document.getElementById('pill-name')?.classList.remove('active');
+    document.getElementById('pill-date')?.classList.remove('active');
+    if (combinedEl) {
+      combinedEl.placeholder = 'Ví dụ: Khánh hoặc 25/12';
+    }
+  } catch {}
+  if (combinedEl) combinedEl.value = '';
+  if (errEl) errEl.textContent = '\u00A0';
+  m.style.display = 'flex';
+  m.setAttribute('aria-hidden', 'false');
+  setTimeout(() => { try { combinedEl?.focus(); } catch {} }, 0);
+  // Lock canvas resizing while input/keyboard is active
+  keyboardLock = true;
+  document.body.classList.add('kb-open');
+  try {
+    if (combinedEl) {
+      combinedEl.addEventListener('focus', () => { keyboardLock = true; document.body.classList.add('kb-open'); });
+      combinedEl.addEventListener('blur', () => {
+        // Small delay to wait for keyboard animation
+        setTimeout(() => { keyboardLock = false; document.body.classList.remove('kb-open'); safeResize(); }, 150);
+      });
+    }
+  } catch {}
+}
+function closeInputModal() {
+  const m = document.getElementById('input-modal');
+  if (!m) return;
+  m.style.display = 'none';
+  m.setAttribute('aria-hidden', 'true');
+  keyboardLock = false;
+  document.body.classList.remove('kb-open');
+  safeResize();
+}
+function validateBday(ddmm) {
+  if (!ddmm) return true;
+  const re = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/;
+  return re.test(ddmm.trim());
+}
+function setupInputModal() {
+  const m = document.getElementById('input-modal');
+  if (!m) return;
+  const cancelBtn = document.getElementById('input-cancel');
+  const okBtn = document.getElementById('input-ok');
+  const combinedEl = document.getElementById('input-combined');
+  const errEl = document.getElementById('input-error');
+  const closeBtn = document.getElementById('input-close');
+  const pillName = document.getElementById('pill-name');
+  const pillDate = document.getElementById('pill-date');
+  let inputMode = 'auto'; // 'auto' | 'name' | 'date'
+  function setMode(mode) {
+    inputMode = mode;
+    pillName?.classList.toggle('active', mode === 'name');
+    pillDate?.classList.toggle('active', mode === 'date');
+    if (combinedEl) {
+      if (mode === 'name') combinedEl.placeholder = 'Nhập tên của bạn';
+      else if (mode === 'date') combinedEl.placeholder = 'dd/mm';
+      else combinedEl.placeholder = 'Ví dụ: Hoa hoặc 25/12';
+    }
+    if (errEl) errEl.textContent = '\u00A0';
+  }
+  function formatDateInput() {
+    if (!combinedEl) return;
+    let v = combinedEl.value || '';
+    // Only apply mask when explicit date mode
+    if (inputMode !== 'date') return;
+    const digits = v.replace(/[^0-9]/g, '').slice(0, 4);
+    if (digits.length <= 2) {
+      combinedEl.value = digits;
+    } else {
+      combinedEl.value = digits.slice(0, 2) + '/' + digits.slice(2);
+    }
+  }
+  if (cancelBtn) cancelBtn.addEventListener('click', closeInputModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeInputModal);
+  if (m) m.addEventListener('click', (e) => { if (e.target === m) closeInputModal(); });
+  if (pillName) pillName.addEventListener('click', () => setMode(inputMode === 'name' ? 'auto' : 'name'));
+  if (pillDate) pillDate.addEventListener('click', () => setMode(inputMode === 'date' ? 'auto' : 'date'));
+  if (combinedEl) combinedEl.addEventListener('input', formatDateInput);
+  function confirm() {
+    const val = (combinedEl?.value || '').trim();
+    if (!val) { if (errEl) errEl.textContent = 'Vui lòng nhập tên hoặc ngày sinh (dd/mm).'; return; }
+    const treatAsDate = inputMode === 'date' || val.includes('/');
+    if (treatAsDate) {
+      if (!validateBday(val)) { if (errEl) errEl.textContent = 'Ngày sinh không đúng định dạng dd/mm.'; return; }
+      try { localStorage.setItem('xmas_bday', val); } catch {}
+      try { localStorage.removeItem('xmas_name'); } catch {}
+      // Show random greeting in the same modal as gifts
+      showGreeting(getRandomGreeting());
+      // If it's 25/12, enable heart mode
+      if (val === '25/12') {
+        triggerHeartFor(5);
+      } else {
+        setHeartEnabled(false);
+      }
+    } else {
+      try { localStorage.setItem('xmas_name', val); } catch {}
+      try { localStorage.removeItem('xmas_bday'); } catch {}
+      // Show personalized greeting in the same modal as gifts
+      showGreeting('Chúc mừng giáng sinh, ' + val);
+      // Name input does not enforce heart mode
+      setHeartEnabled(false);
+    }
+    closeInputModal();
+  }
+  if (okBtn) okBtn.addEventListener('click', confirm);
+  if (combinedEl) combinedEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirm(); });
+}
+window.addEventListener('DOMContentLoaded', setupInputModal);
+
+/* ================= INLINE GREETING DISPLAY ================= */
+let greetingsList = [];
+async function loadGreetingsFile() {
+  try {
+    const res = await fetch('greetings.txt', { cache: 'no-store' });
+    if (!res.ok) throw new Error('fetch greetings failed');
+    const text = await res.text();
+    greetingsList = text
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter((s) => s && !s.startsWith('#'));
+  } catch (e) {
+    greetingsList = [
+      'Chúc bạn một mùa Giáng sinh an lành và ấm áp!',
+      'Merry Christmas! Chúc bạn thật nhiều niềm vui!',
+      'Chúc Giáng sinh tràn ngập yêu thương và hạnh phúc!',
+      'Giáng sinh vui vẻ! Luôn mạnh khỏe và bình an!',
+      'Chúc bạn có một mùa lễ rực rỡ và ấm áp!',
+    ];
+  }
+}
+function pickRandomGreeting() {
+  if (!greetingsList || greetingsList.length === 0) return 'Merry Christmas! Giáng sinh an lành!';
+  const i = Math.floor(Math.random() * greetingsList.length);
+  return greetingsList[i];
+}
+function setInlineGreeting(text) {
+  const el = document.getElementById('inline-greeting');
+  if (!el) return;
+  el.textContent = text;
+  el.style.display = 'block';
+  el.setAttribute('aria-hidden', 'false');
+}
+function clearInlineGreeting() {
+  const el = document.getElementById('inline-greeting');
+  if (!el) return;
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden', 'true');
+}
+async function applyGreetingFromStorage() {
+  try {
+    await loadGreetingsFile();
+  } catch {}
+  let name = null, bday = null;
+  try { name = localStorage.getItem('xmas_name'); } catch {}
+  try { bday = localStorage.getItem('xmas_bday'); } catch {}
+  if (name) {
+    setInlineGreeting('Chúc mừng giáng sinh, ' + name);
+  } else if (bday) {
+    setInlineGreeting(pickRandomGreeting());
+  } else {
+    clearInlineGreeting();
+  }
+}
+// Disabled inline greeting auto-show; use modal like gift box instead
+// window.addEventListener('DOMContentLoaded', applyGreetingFromStorage);
+
+/* ================= PARTICLE TREE ================= */
+let groupGold, groupRed, groupGift;
+let rotVelocity = 0.003; // gentle auto-rotate (original)
+let currentRotY = 0;
+// Snow variables
+let snowPoints = null, snowVelocities = [], snowGeo = null;
+let snowReduced = false;
+// Falling gifts
+let giftSprites = [], giftVel = [];
+// Perf monitor variables
+let lastTime = 0;
+let fpsAccum = 0, fpsCount = 0, lastFpsAdjust = 0;
+let frameCounter = 0;
+
+// Page pause/resume control
+let isPaused = false;
+let rafId = 0;
+let audioWasPlayingBeforeHide = false;
+let santaWasPlayingBeforeHide = false;
+
+// Raycaster for picking gifts
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2();
+
+/* ================= FIREPLACE ================= */
+let fireplaceGroup = null;
+let fireSprite = null;
+let fireGlowSprite = null;
+let fireFrontMesh = null;
+let fireplaceSizeMul = 1; // scales facade, flame, and glow together
+let fireHitMesh = null; // invisible larger click target
+
+function createFireplace() {
+  // If exists, remove and rebuild as pure 2D
+  if (fireplaceGroup) {
+    try { scene.remove(fireplaceGroup); } catch {}
+  }
+  fireplaceGroup = new THREE.Group();
+  // Ground reference near the tree base
+  const groundY = -CONFIG.treeHeight / 2 + TREE_Y_OFFSET; // approx ground in world space
+  const posX = isMobile ? 25 : 37; // closer to the tree on phones
+  const posZ = 0;
+
+  // 2D facade plane
+  const frontMat = new THREE.MeshBasicMaterial({ map: textures.fireplace2d, transparent: true, depthWrite: false });
+  fireFrontMesh = new THREE.Mesh(new THREE.PlaneGeometry(22, 20), frontMat);
+  fireFrontMesh.position.set(posX, groundY + 1.25 + 9.2, posZ - 1.6);
+  fireplaceGroup.add(fireFrontMesh);
+
+  // Invisible hit area: align exactly to the facade (lo_suoi.png)
+  const hitMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, depthWrite: false, depthTest: false });
+    // Use same base geometry as facade so scaling matches 1:1
+    fireHitMesh = new THREE.Mesh(new THREE.PlaneGeometry(22, 20), hitMat);
+    // Initially match the facade position and scale; kept in sync later
+    fireHitMesh.position.copy(fireFrontMesh.position);
+    fireHitMesh.scale.copy(fireFrontMesh.scale);
+  fireplaceGroup.add(fireHitMesh);
+
+  // Fire glow (2D sprite)
+  const glowMat = new THREE.SpriteMaterial({
+    map: textures.fireGlow,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    opacity: 0.55,
+  });
+  fireGlowSprite = new THREE.Sprite(glowMat);
+  fireGlowSprite.scale.set(16, 16, 1);
+  fireGlowSprite.position.set(posX, groundY + 1.25 + 6.2, posZ - 1.2);
+  fireplaceGroup.add(fireGlowSprite);
+
+  // No flame sprite; use glow-only light effect
+
+  scene.add(fireplaceGroup);
+}
+
+// Load external fireplace facade image and adjust scaling
+function adjustFireplaceScale(tex) {
+  if (!fireFrontMesh || !tex || !tex.image) return;
+  const img = tex.image;
+  const aspect = img.width && img.height ? img.width / img.height : 1;
+  // Base geometry size is Plane(22, 20). Increase visual height for a larger facade.
+  const targetH = 36;
+  const targetW = targetH * aspect;
+  fireFrontMesh.scale.set(targetW / 22, targetH / 20, 1);
+  fireplaceSizeMul = targetH / 20;
+  // Align hit area exactly to the facade image bounds
+  if (fireHitMesh && fireFrontMesh) {
+    fireHitMesh.position.copy(fireFrontMesh.position);
+    fireHitMesh.scale.copy(fireFrontMesh.scale);
+  }
+}
+
+function loadExternalFireplaceTexture(path = 'lo_suoi.png') {
+  try {
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      path,
+      (tex) => {
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy?.() || tex.anisotropy;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        if (fireFrontMesh && fireFrontMesh.material) {
+          fireFrontMesh.material.map = tex;
+          fireFrontMesh.material.transparent = true;
+          fireFrontMesh.material.depthWrite = false;
+          fireFrontMesh.material.needsUpdate = true;
+        }
+        adjustFireplaceScale(tex);
+      },
+      undefined,
+      () => {
+        // If loading fails, keep the existing canvas texture as fallback
+        // No-op
+      }
+    );
+  } catch (e) {
+    // Ignore errors; fallback already rendered
+  }
+}
+
+function updateFireplace(time, lowPerf) {
+  if (!fireGlowSprite) return;
+  // Soft ambient light pulse (no flame)
+  const breath = 1.0 + 0.10 * Math.sin(time * 2.2);
+  const base = 18 * fireplaceSizeMul;
+  fireGlowSprite.scale.set(base * breath, base * breath, 1);
+  fireGlowSprite.material.opacity = 0.45 + 0.25 * (0.5 + 0.5 * Math.sin(time * 2.4));
+  // Keep the clickable hit area exactly matching the facade bounds
+  if (fireHitMesh && fireFrontMesh) {
+    fireHitMesh.position.copy(fireFrontMesh.position);
+    fireHitMesh.scale.copy(fireFrontMesh.scale);
+  }
+}
+// EXPLODE rotation state (sphere spin)
+let explodeRot = { yaw: 0, pitch: 0, roll: 0 };
+const explodeRotSpeed = { yaw: 0.7, pitch: 0.5, roll: 0.35 };
+let explodeAngles = { sy: 0, cy: 1, sx: 0, cx: 1, sz: 0, cz: 1 };
+
+/* ================= HEART MODE (25/12) ================= */
+const heartState = { amount: 0, target: 0, duration: 1.2 };
+let heartTimerId = null;
+function clearHeartTimer() { if (heartTimerId) { try { clearTimeout(heartTimerId); } catch {} heartTimerId = null; } }
+function setHeartEnabled(enabled) {
+  heartState.target = enabled ? 1 : 0;
+  if (enabled) {
+    prepareHeartTargetsForGroup(groupGold);
+    prepareHeartTargetsForGroup(groupRed);
+    prepareHeartTargetsForGroup(groupGift);
+  }
+}
+function triggerHeartFor(seconds = 5) {
+  setHeartEnabled(true);
+  clearHeartTimer();
+  heartTimerId = setTimeout(() => { setHeartEnabled(false); heartTimerId = null; }, Math.max(0, seconds * 1000));
+}
+function implicitHeartF(x, y) {
+  // (x^2 + y^2 - 1)^3 - x^2 y^3 <= 0 is inside heart (classic implicit heart)
+  const a = x * x + y * y - 1;
+  return a * a * a - x * x * y * y * y;
+}
+function generateHeartPoints(count, width, height, centerY) {
+  // Use a smooth parametric heart for a nicer outline, then scale inward for fill.
+  // Parametric curve (classic):
+  // x(t) = 16 sin^3 t, y(t) = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t, t in [0, 2π]
+  const out = new Float32Array(count * 3);
+  const halfW = width * 0.5;
+  const halfH = height * 0.5;
+  for (let i = 0; i < count; i++) {
+    const t = (i / count + (Math.random() - 0.5) * 0.01) * Math.PI * 2; // even coverage + tiny jitter
+    // Bias toward the outline a bit for a crisp edge while still filling inside
+    const s = Math.pow(Math.random(), 0.45); // 0..1, skewed toward 1 (outer edge)
+    let x = 16 * Math.pow(Math.sin(t), 3);
+    let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    // Normalize rough extents to [-1,1] domain (approximate vertical span ~17)
+    x = (x / 16) * s;
+    y = (y / 17) * s;
+    // Subtle jitter to avoid banding
+    x += (Math.random() - 0.5) * 0.02;
+    y += (Math.random() - 0.5) * 0.02;
+    // Scale to world and position
+    const wx = x * halfW;
+    const wy = y * halfH + centerY;
+    // Add gentle 3D curvature and tiny depth noise for richness
+    const zCurve = 0.06; // curvature intensity
+    const wz = -(y * y) * zCurve * height + (Math.random() - 0.5) * 0.4;
+    out[i * 3] = wx;
+    out[i * 3 + 1] = wy;
+    out[i * 3 + 2] = wz;
+  }
+  return out;
+}
+function prepareHeartTargetsForGroup(group) {
+  if (!group || !group.geometry || !group.geometry.attributes || !group.geometry.userData) return;
+  const count = group.geometry.attributes.position.count;
+  const g = group.geometry;
+  // Heart dimensions fit roughly within tree silhouette
+  const width = 52;   // slightly wider for a pleasing proportion
+  const height = 44;  // slightly taller for balance
+  const centerY = 12; // lift a bit so it sits centered in the tree
+  g.userData.heart = generateHeartPoints(count, width, height, centerY);
+}
+
+/* ================= SANTA FLY-BY ================= */
+let santaSprite = null;
+let sleighTrailSprite = null;
+let santaGlowSprite = null;
+const santaSpeed = 6; // world units per second
+const santaBaseY = 50; // fly lower, just below the title
+function createSanta() {
+  const mat = new THREE.SpriteMaterial({
+    map: textures.sleigh,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    opacity: 0.95,
+  });
+  santaSprite = new THREE.Sprite(mat);
+  santaSprite.scale.set(isMobile ? 22 : 30, isMobile ? 22 : 30, 1);
+  resetSanta(true);
+  scene.add(santaSprite);
+
+  // Add soft glow halo behind the sleigh
+  const glowMat = new THREE.SpriteMaterial({
+    map: textures.sleighGlow,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    opacity: 0.75,
+  });
+  santaGlowSprite = new THREE.Sprite(glowMat);
+  santaGlowSprite.renderOrder = 1;
+  santaSprite.renderOrder = 2;
+  scene.add(santaGlowSprite);
+  // Match glow to sleigh position and scale
+  santaGlowSprite.position.copy(santaSprite.position);
+  adjustSleighGlowScale();
+
+  // Add soft magical trail following the sleigh
+  const trailMat = new THREE.SpriteMaterial({
+    map: textures.sleighTrail,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    opacity: 0.55,
+  });
+  sleighTrailSprite = new THREE.Sprite(trailMat);
+  sleighTrailSprite.scale.set(isMobile ? 18 : 24, isMobile ? 18 : 24, 1);
+  sleighTrailSprite.material.rotation = -Math.PI * 0.06;
+  scene.add(sleighTrailSprite);
+  // Position trail initially behind sleigh
+  if (santaSprite) {
+    sleighTrailSprite.position.set(santaSprite.position.x - 10, santaSprite.position.y, santaSprite.position.z);
+  }
+}
+
+// Adjust sleigh sprite scale based on the image's aspect ratio
+function adjustSleighScale(tex) {
+  if (!santaSprite || !tex || !tex.image) return;
+  const h = isMobile ? 22 : 30;
+  const aspect = tex.image.width && tex.image.height ? (tex.image.width / tex.image.height) : 1;
+  santaSprite.scale.set(h * aspect, h, 1);
+  adjustSleighGlowScale();
+}
+
+// Adjust glow scale to sit nicely behind the sleigh
+function adjustSleighGlowScale() {
+  if (!santaSprite || !santaGlowSprite) return;
+  const gh = santaSprite.scale.y * 1.6;
+  santaGlowSprite.scale.set(gh, gh, 1);
+}
+
+// Load external sleigh texture, swap it in, and adjust scale
+function loadExternalSleighTexture(path = SLEIGH_IMAGE) {
+  const loader = new THREE.TextureLoader();
+  loader.load(path, (tex) => {
+    try {
+      const maxAniso = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+      tex.anisotropy = maxAniso;
+    } catch {}
+    textures.sleigh = tex;
+    if (santaSprite) {
+      santaSprite.material.map = tex;
+      santaSprite.material.blending = THREE.NormalBlending; // show PNG colors accurately
+      santaSprite.material.needsUpdate = true;
+      adjustSleighScale(tex);
+    }
+  }, undefined, () => {
+    // If loading fails, keep the canvas sleigh as fallback
+  });
+}
+function resetSanta(initial = false) {
+  // Start off-screen to the left; slight random vertical offset
+  const startX = -140;
+  santaSprite.position.set(startX, santaBaseY + (initial ? 0 : (Math.random() * 6 - 3)), 0);
+  if (santaGlowSprite) {
+    santaGlowSprite.position.copy(santaSprite.position);
+  }
+  if (sleighTrailSprite) {
+    sleighTrailSprite.position.set(santaSprite.position.x - 10, santaSprite.position.y, santaSprite.position.z);
+  }
+}
+function updateSanta(dt, time) {
+  if (!santaSprite) return;
+  santaSprite.position.x += santaSpeed * dt;
+  // Gentle bobbing
+  santaSprite.position.y = santaBaseY + Math.sin(time * 0.8) * 2.0;
+  // Soft twinkle
+  santaSprite.material.opacity = 0.85 + 0.15 * Math.sin(time * 1.2);
+  // Glow follows and gently pulses
+  if (santaGlowSprite) {
+    santaGlowSprite.position.copy(santaSprite.position);
+    santaGlowSprite.material.opacity = 0.55 + 0.25 * (0.5 + 0.5 * Math.sin(time * 1.3));
+  }
+  // Trail follows with slight smoothing and pulse
+  if (sleighTrailSprite) {
+    sleighTrailSprite.position.x += (santaSprite.position.x - 10 - sleighTrailSprite.position.x) * 0.2;
+    sleighTrailSprite.position.y += (santaSprite.position.y - sleighTrailSprite.position.y) * 0.2;
+    const base = 0.45 + 0.25 * (0.5 + 0.5 * Math.sin(time * 1.4));
+    sleighTrailSprite.material.opacity = base;
+    const s = (isMobile ? 18 : 24) * (0.98 + 0.02 * Math.sin(time * 2.0));
+    sleighTrailSprite.scale.set(s, s, 1);
+  }
+  // Reset when out of view
+  if (santaSprite.position.x > 140) {
+    resetSanta(false);
+  }
+}
+
+/* ================= STAR CLICK EFFECTS: EXPLODE ================= */
+// Explosion state: to sphere -> hold (until SFX ends) -> return
+const explodeState = { active: false, phase: 'to', t: 0, durationOut: 0.9, durationIn: 1.0 };
+let santaImageSprite = null;
+let santaImageLife = 0;
+let santaImagePhase = 'idle';
+const SANTA_FADE_IN = 0.25;
+const SANTA_FADE_OUT = 0.35;
+let santaSfxEl = null;
+let santaSfxDone = false;
+
+function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+function easeInCubic(x){ return x * x * x; }
+
+function ensureExplodeArrays(group) {
+  const count = group.geometry.attributes.position.count;
+  const ud = group.geometry.userData;
+  if (!ud.explodeVel || ud.explodeVel.length !== count * 3) {
+    ud.explodeVel = new Float32Array(count * 3);
+  }
+  if (!ud.explodeOffset || ud.explodeOffset.length !== count * 3) {
+    ud.explodeOffset = new Float32Array(count * 3);
+  }
+}
+
+function initExplodeTargetsToSphere(group, radius) {
+  ensureExplodeArrays(group);
+  const ud = group.geometry.userData;
+  const base = ud.tree; // [bx, by, bz]
+  const vel = ud.explodeVel; // reuse as target delta vector
+  const count = group.geometry.attributes.position.count;
+  for (let i = 0; i < count; i++) {
+    const bx = base[i * 3];
+    const by = base[i * 3 + 1];
+    const bz = base[i * 3 + 2];
+    // Direction from origin to base point (tree center is (0,0,0) in local)
+    let dx = bx, dy = by, dz = bz;
+    const len = Math.hypot(dx, dy, dz) || 1;
+    dx /= len; dy /= len; dz /= len;
+    // Slight jitter to avoid too-perfect shell
+    dx += (Math.random() - 0.5) * 0.05;
+    dy += (Math.random() - 0.5) * 0.05;
+    dz += (Math.random() - 0.5) * 0.05;
+    const dlen = Math.hypot(dx, dy, dz) || 1; dx /= dlen; dy /= dlen; dz /= dlen;
+    const sx = dx * radius, sy = dy * radius, sz = dz * radius;
+    // Target delta from base -> sphere position
+    vel[i * 3] = sx - bx;
+    vel[i * 3 + 1] = sy - by;
+    vel[i * 3 + 2] = sz - bz;
+  }
+}
+
+function clearExplodeOffsets(group) {
+  const ud = group.geometry.userData;
+  if (ud && ud.explodeOffset) ud.explodeOffset.fill(0);
+}
+
+// Ensure geometry positions are restored exactly to base tree layout
+function resetPositionsToBase(group) {
+  if (!group || !group.geometry || !group.geometry.attributes) return;
+  const baseTree = group.geometry.userData && group.geometry.userData.tree;
+  if (!baseTree) return;
+  const posAttr = group.geometry.attributes.position;
+  const positions = posAttr.array;
+  const count = posAttr.count;
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = baseTree[i * 3];
+    positions[i * 3 + 1] = baseTree[i * 3 + 1];
+    positions[i * 3 + 2] = baseTree[i * 3 + 2];
+  }
+  posAttr.needsUpdate = true;
+}
+
+function triggerExplode() {
+  // Compute a sphere radius that covers the whole screen
+  // Approximate using camera FOV and distance to tree center along view
+  const centerZ = 0; // tree center is at z=0 in world; y offset handled by group positions
+  const d = Math.max(1e-3, Math.abs(camera.position.z - centerZ));
+  const fovRad = (camera.fov || 60) * Math.PI / 180;
+  const halfH = Math.tan(fovRad / 2) * d; // visible half-height at depth d
+  const halfW = halfH * (camera.aspect || (window.innerWidth / Math.max(1, window.innerHeight)));
+  const halfDiag = Math.sqrt(halfW * halfW + halfH * halfH);
+  const sphereR = halfDiag * 1.12; // small margin to push beyond corners
+  if (groupGold) initExplodeTargetsToSphere(groupGold, sphereR);
+  if (groupRed) initExplodeTargetsToSphere(groupRed, sphereR);
+  if (groupGift) initExplodeTargetsToSphere(groupGift, sphereR);
+  explodeState.active = true;
+  explodeState.phase = 'to';
+  explodeState.t = 0;
+  santaSfxDone = false;
+  // Visual and audio extras
+  showSantaImage();
+  playSantaSfx();
+}
+
+function showSantaImage() {
+  const tryPath = (p) => new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(p, tex => resolve(tex), undefined, reject);
+  });
+  const baseName = 'santa_claus_PNG38508';
+  // Try exact, then .png
+  tryPath(baseName).catch(() => tryPath(baseName + '.png')).then(tex => {
+    if (!tex) return;
+    if (santaImageSprite) {
+      // Replace existing
+      santaImageSprite.material.map = tex;
+      santaImageSprite.material.needsUpdate = true;
+    } else {
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.NormalBlending, opacity: 0 });
+      santaImageSprite = new THREE.Sprite(mat);
+      santaImageSprite.renderOrder = 3;
+      scene.add(santaImageSprite);
+    }
+    // Scale with aspect
+    const h = isMobile ? 26 : 34;
+    const aspect = tex.image && tex.image.height ? (tex.image.width / tex.image.height) : 1;
+    santaImageSprite.scale.set(h * aspect, h, 1);
+    // Center image within the tree (world y ~ TREE_Y_OFFSET)
+    santaImageSprite.position.set(0, TREE_Y_OFFSET, 0);
+    santaImageLife = 0; // reset fade timer
+    santaImagePhase = 'fadein';
+  }).catch(() => { /* ignore if not found */ });
+}
+
+function playSantaSfx() {
+  try {
+    const src = encodeURI('Santa sound.mp3');
+    if (santaSfxEl) { try { santaSfxEl.pause(); } catch {} santaSfxEl = null; }
+    santaSfxEl = new Audio(src);
+    santaSfxEl.preload = 'auto';
+    santaSfxEl.volume = 0.85;
+    santaSfxDone = false;
+    santaSfxEl.addEventListener('ended', () => { santaSfxDone = true; });
+    // user click initiated, should be allowed
+    santaSfxEl.play().catch(() => {});
+  } catch (_) { /* ignore */ }
+}
+
+function createParticleSystem(type, count, size) {
+  const pPositions = [];
+  const pTreeTargets = [];
+  const sizes = [];
+  const phases = [];
+
+  for (let i = 0; i < count; i++) {
+    const h = Math.random() * CONFIG.treeHeight;
+    const y = h - CONFIG.treeHeight / 2;
+    const radiusRatio = type === 'gold' ? Math.sqrt(Math.random()) : 0.9 + Math.random() * 0.1;
+    const maxR = (1 - h / CONFIG.treeHeight) * CONFIG.treeBaseRadius;
+    const r = maxR * radiusRatio;
+    const theta = Math.random() * Math.PI * 2;
+    const tx = r * Math.cos(theta);
+    const tz = r * Math.sin(theta);
+    pTreeTargets.push(tx, y, tz);
+    pPositions.push(tx, y, tz);
+    sizes.push(size);
+    phases.push(Math.random() * Math.PI * 2);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pPositions, 3));
+  geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+  const colors = new Float32Array(count * 3);
+  const baseColor = new THREE.Color();
+  if (type === 'gold') baseColor.setHex(0xffd36b);
+  else if (type === 'red') baseColor.setHex(0xe53935);
+  else baseColor.setHex(0xffffff);
+  for (let i = 0; i < count; i++) {
+    colors[i * 3] = baseColor.r;
+    colors[i * 3 + 1] = baseColor.g;
+    colors[i * 3 + 2] = baseColor.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.userData = { tree: pTreeTargets, phases, baseColor, baseSize: size };
+
+  const mat = new THREE.PointsMaterial({
+    size,
+    map: textures[type],
+    transparent: true,
+    opacity: 1.0,
+    vertexColors: true,
+    blending: type === 'gift' ? THREE.NormalBlending : THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+  return points;
+}
+
+function initTree() {
+  groupGold = createParticleSystem('gold', CONFIG.goldCount, 2.0);
+  groupRed = createParticleSystem('red', CONFIG.redCount, 3.5);
+  groupGift = createParticleSystem('gift', CONFIG.giftCount, 3.0);
+  // Raise the whole tree
+  groupGold.position.y = TREE_Y_OFFSET;
+  groupRed.position.y = TREE_Y_OFFSET;
+  groupGift.position.y = TREE_Y_OFFSET;
+}
+
+/* ================= STAR + TITLE ================= */
+let starMesh, titleMesh;
+function createDecorations() {
+  // Title text
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 100px "Mountains of Christmas", serif';
+  const grad = ctx.createLinearGradient(200, 0, 824, 0);
+  grad.addColorStop(0, '#fff6d1'); grad.addColorStop(0.5, '#ffd36b'); grad.addColorStop(1, '#f5b64a');
+  ctx.fillStyle = grad; ctx.textAlign = 'center'; ctx.shadowColor = '#ffd36b'; ctx.shadowBlur = 30;
+  ctx.fillText('MERRY CHRISTMAS', 512, 130);
+  const tex = new THREE.CanvasTexture(canvas);
+  titleMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 15), new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending }));
+  titleMesh.position.set(0, 50 + TITLE_Y_OFFSET, 0);
+  scene.add(titleMesh);
+
+  // Glowing star
+  const starCanvas = document.createElement('canvas');
+  starCanvas.width = 128; starCanvas.height = 128;
+  const sCtx = starCanvas.getContext('2d');
+  const starGrad = sCtx.createRadialGradient(64, 64, 0, 64, 64, 52);
+  starGrad.addColorStop(0, '#fff7d6'); starGrad.addColorStop(0.5, '#ffd36b'); starGrad.addColorStop(1, 'rgba(255,211,107,0)');
+  sCtx.fillStyle = starGrad; sCtx.shadowColor = '#ffd36b'; sCtx.shadowBlur = 24;
+  sCtx.beginPath();
+  const cx = 64, cy = 64, outer = 50, inner = 20;
+  for (let i = 0; i < 5; i++) {
+    sCtx.lineTo(cx + Math.cos(((18 + i * 72) / 180) * Math.PI) * outer, cy - Math.sin(((18 + i * 72) / 180) * Math.PI) * outer);
+    sCtx.lineTo(cx + Math.cos(((54 + i * 72) / 180) * Math.PI) * inner, cy - Math.sin(((54 + i * 72) / 180) * Math.PI) * inner);
+  }
+  sCtx.closePath(); sCtx.fill();
+  const starTex = new THREE.CanvasTexture(starCanvas);
+  starMesh = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshBasicMaterial({ map: starTex, transparent: true, blending: THREE.AdditiveBlending }));
+  starMesh.position.set(0, CONFIG.treeHeight / 2 + 2 + TREE_Y_OFFSET, 0);
+  scene.add(starMesh);
+}
+
+// Redraw title after web fonts load to ensure correct typeface
+function updateTitleTexture() {
+  if (!titleMesh) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 100px "Mountains of Christmas", serif';
+  const grad = ctx.createLinearGradient(200, 0, 824, 0);
+  grad.addColorStop(0, '#fff6d1'); grad.addColorStop(0.5, '#ffd36b'); grad.addColorStop(1, '#f5b64a');
+  ctx.fillStyle = grad; ctx.textAlign = 'center'; ctx.shadowColor = '#ffd36b'; ctx.shadowBlur = 30;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillText('MERRY CHRISTMAS', 512, 130);
+  const tex = new THREE.CanvasTexture(canvas);
+  titleMesh.material.map = tex;
+  titleMesh.material.needsUpdate = true;
+}
+
+/* ================= SNOW (Desktop only) ================= */
+function createSnow() {
+  const count = 500;
+  const positions = new Float32Array(count * 3);
+  snowVelocities = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() - 0.5) * 160;
+    const y = Math.random() * 120;
+    const z = (Math.random() - 0.5) * 160;
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+    snowVelocities[i] = 0.15 + Math.random() * 0.25;
+  }
+  snowGeo = new THREE.BufferGeometry();
+  snowGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 1.8,
+    map: textures.snow,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
+    color: 0xffffff,
+  });
+  snowPoints = new THREE.Points(snowGeo, mat);
+  scene.add(snowPoints);
+}
+
+// Reduce snow density and increase flake size on low performance to keep it smooth
+function rebuildSnowForLowPerf() {
+  if (!snowPoints || !snowGeo || snowReduced) return;
+  try { scene.remove(snowPoints); } catch {}
+  const oldCount = snowVelocities.length;
+  const newCount = Math.max(200, Math.floor(oldCount * 0.6));
+  const positions = new Float32Array(newCount * 3);
+  snowVelocities = new Float32Array(newCount);
+  for (let i = 0; i < newCount; i++) {
+    const x = (Math.random() - 0.5) * 160;
+    const y = Math.random() * 120;
+    const z = (Math.random() - 0.5) * 160;
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+    snowVelocities[i] = 0.15 + Math.random() * 0.25;
+  }
+  snowGeo = new THREE.BufferGeometry();
+  snowGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 2.4,
+    map: textures.snow,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
+    color: 0xffffff,
+  });
+  snowPoints = new THREE.Points(snowGeo, mat);
+  scene.add(snowPoints);
+  snowReduced = true;
+}
+
+/* ================= FALLING GIFTS (All devices) ================= */
+function chooseGiftTexture() {
+  return Math.random() < 0.6 ? textures.gift : textures.giftGreen;
+}
+
+function resetGift(spr, initial = false) {
+  const x = (Math.random() - 0.5) * 120;
+  const z = (Math.random() - 0.5) * 80;
+  const y = initial ? 30 + Math.random() * 90 : 90 + Math.random() * 40;
+  spr.position.set(x, y, z);
+  if (spr.material && spr.material.map) {
+    spr.material.map = chooseGiftTexture();
+    spr.material.needsUpdate = true;
+  }
+}
+
+function createFallingGifts() {
+  const count = isMobile ? 6 : 10;
+  for (let i = 0; i < count; i++) {
+    const mat = new THREE.SpriteMaterial({
+      map: chooseGiftTexture(),
+      transparent: true,
+      depthWrite: false,
+    });
+    const spr = new THREE.Sprite(mat);
+    spr.scale.set(6, 6, 1);
+    resetGift(spr, true);
+    giftSprites.push(spr);
+    giftVel.push(0.12 + Math.random() * 0.18);
+    scene.add(spr);
+  }
+}
+
+function pickGiftAtClientPos(clientX, clientY) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const intersects = raycaster.intersectObjects(giftSprites, false);
+  if (intersects && intersects.length > 0) {
+    showGreeting(getRandomGreeting());
+    return true;
+  }
+  return false;
+}
+
+// Detect sleigh click (including trail) to switch music
+function pickSleighAtClientPos(clientX, clientY) {
+  if (!santaSprite) return false;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const objs = sleighTrailSprite ? [santaSprite, sleighTrailSprite] : [santaSprite];
+  const intersects = raycaster.intersectObjects(objs, false);
+  return intersects && intersects.length > 0;
+}
+
+// Detect fireplace click to open the input modal
+function pickFireplaceAtClientPos(clientX, clientY) {
+  if (!fireFrontMesh && !fireHitMesh) return false;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const objs = [];
+  if (fireHitMesh) objs.push(fireHitMesh);
+  else if (fireFrontMesh) objs.push(fireFrontMesh);
+  const intersects = raycaster.intersectObjects(objs, false);
+  return intersects && intersects.length > 0;
+}
+
+// Detect star click to trigger tree burst + Santa image + sfx
+function pickStarAtClientPos(clientX, clientY) {
+  if (!starMesh) return false;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const intersects = raycaster.intersectObjects([starMesh], false);
+  return intersects && intersects.length > 0;
+}
+
+/* ================= ANIMATE ================= */
+function updateParticleGroup(group, type, time) {
+  const positions = group.geometry.attributes.position.array;
+  const colors = group.geometry.attributes.color.array;
+  const phases = group.geometry.userData.phases;
+  const baseColor = group.geometry.userData.baseColor;
+  const baseTree = group.geometry.userData.tree;
+  const explodeOffset = group.geometry.userData.explodeOffset;
+  const heart = group.geometry.userData.heart;
+
+  const count = positions.length / 3;
+  group.rotation.y = currentRotY;
+  const lowPerf = document.body.classList.contains('lowperf');
+  const skipColorUpdate = lowPerf && (frameCounter % 2 === 1);
+
+  // Update colors (twinkle). Throttle on low-perf to every other frame.
+  if (!skipColorUpdate) {
+    for (let i = 0; i < count; i++) {
+      let brightness = 1.0;
+      if (type === 'red') {
+        // Original red twinkle
+        brightness = 0.5 + 0.5 * Math.sin(time * 3 + phases[i]);
+      } else if (type === 'gold') {
+        // Original gold twinkle
+        brightness = 0.8 + 0.4 * Math.sin(time * 10 + phases[i]);
+      }
+      colors[i * 3] = baseColor.r * brightness;
+      colors[i * 3 + 1] = baseColor.g * brightness;
+      colors[i * 3 + 2] = baseColor.b * brightness;
+    }
+    group.geometry.attributes.color.needsUpdate = true;
+  }
+
+  // If heart mode is blending in/out, morph positions towards heart targets
+  if (baseTree && heartState.amount > 0 && heart && heart.length === positions.length) {
+    const t = heartState.amount;
+    for (let i = 0; i < count; i++) {
+      const bx = baseTree[i * 3];
+      const by = baseTree[i * 3 + 1];
+      const bz = baseTree[i * 3 + 2];
+      const hx = heart[i * 3];
+      const hy = heart[i * 3 + 1];
+      const hz = heart[i * 3 + 2];
+      positions[i * 3] = bx + (hx - bx) * t;
+      positions[i * 3 + 1] = by + (hy - by) * t;
+      positions[i * 3 + 2] = bz + (hz - bz) * t;
+    }
+    group.geometry.attributes.position.needsUpdate = true;
+  }
+  // EXPLODE effect overrides when active
+  else if (baseTree && explodeState.active) {
+    for (let i = 0; i < count; i++) {
+      const bx = baseTree[i * 3];
+      const by = baseTree[i * 3 + 1];
+      const bz = baseTree[i * 3 + 2];
+      let ox = explodeOffset ? explodeOffset[i * 3] : 0;
+      let oy = explodeOffset ? explodeOffset[i * 3 + 1] : 0;
+      let oz = explodeOffset ? explodeOffset[i * 3 + 2] : 0;
+      // Apply sphere rotation if explode is active
+      // yaw (Y)
+      let rx = ox * explodeAngles.cy - oz * explodeAngles.sy;
+      let rz = ox * explodeAngles.sy + oz * explodeAngles.cy;
+      let ry = oy;
+      // pitch (X)
+      let ryy = ry * explodeAngles.cx - rz * explodeAngles.sx;
+      let rzz = ry * explodeAngles.sx + rz * explodeAngles.cx;
+      let rxx = rx;
+      // roll (Z)
+      let rxxx = rxx * explodeAngles.cz - ryy * explodeAngles.sz;
+      let ryyy = rxx * explodeAngles.sz + ryy * explodeAngles.cz;
+      let rzzz = rzz;
+      ox = rxxx; oy = ryyy; oz = rzzz;
+      positions[i * 3] = bx + ox;
+      positions[i * 3 + 1] = by + oy;
+      positions[i * 3 + 2] = bz + oz;
+    }
+    group.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
+function animate() {
+  rafId = requestAnimationFrame(animate);
+  const nowMs = Date.now();
+  const time = nowMs * 0.001;
+  const dt = lastTime ? (time - lastTime) : 0;
+  lastTime = time;
+  frameCounter++;
+  // FPS monitoring for dynamic performance adjustments
+  if (dt > 0) {
+    fpsAccum += 1 / dt;
+    fpsCount++;
+  }
+  if (time - lastFpsAdjust > 2.0) {
+    const avgFps = fpsCount ? fpsAccum / fpsCount : 60;
+    fpsAccum = 0; fpsCount = 0; lastFpsAdjust = time;
+    if (avgFps < 50 && currentPixelRatio > 1) {
+      currentPixelRatio = Math.max(1, currentPixelRatio - 0.25);
+      renderer.setPixelRatio(currentPixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.classList.add('lowperf');
+    } else if (avgFps > 58 && currentPixelRatio < initialPixelRatio) {
+      currentPixelRatio = Math.min(initialPixelRatio, currentPixelRatio + 0.25);
+      renderer.setPixelRatio(currentPixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      if (currentPixelRatio === initialPixelRatio) {
+        document.body.classList.remove('lowperf');
+      }
+    }
+  }
+  currentRotY += rotVelocity;
+  rotVelocity *= 0.995; // mild damping
+  if (Math.abs(rotVelocity) < 0.0002) rotVelocity = 0.003; // keep it moving (original)
+
+  // Update explode offsets progression: to sphere, hold, return
+  if (explodeState.active) {
+    explodeState.t += dt;
+    // Determine rotation factor by phase (accelerate in, steady hold, decelerate out)
+    let rotFactor = 1;
+    if (explodeState.phase === 'to') {
+      const pRot = Math.min(1, explodeState.t / Math.max(0.0001, explodeState.durationOut));
+      rotFactor = easeOutCubic(pRot);
+    } else if (explodeState.phase === 'return') {
+      const pRot = Math.min(1, explodeState.t / Math.max(0.0001, explodeState.durationIn));
+      rotFactor = 1 - easeInCubic(pRot);
+    } else {
+      rotFactor = 1;
+    }
+    explodeRot.yaw += dt * explodeRotSpeed.yaw * rotFactor;
+    explodeRot.pitch += dt * explodeRotSpeed.pitch * rotFactor * 0.8;
+    explodeRot.roll += dt * explodeRotSpeed.roll * rotFactor * 0.6;
+    // Cache trig
+    explodeAngles.sy = Math.sin(explodeRot.yaw); explodeAngles.cy = Math.cos(explodeRot.yaw);
+    explodeAngles.sx = Math.sin(explodeRot.pitch); explodeAngles.cx = Math.cos(explodeRot.pitch);
+    explodeAngles.sz = Math.sin(explodeRot.roll); explodeAngles.cz = Math.cos(explodeRot.roll);
+    if (explodeState.phase === 'to') {
+      const p = Math.min(1, explodeState.t / explodeState.durationOut);
+      const amount = easeOutCubic(p);
+      const apply = (group) => {
+        if (!group) return;
+        ensureExplodeArrays(group);
+        const ud = group.geometry.userData;
+        const vel = ud.explodeVel, off = ud.explodeOffset;
+        const n = group.geometry.attributes.position.count;
+        for (let i = 0; i < n; i++) {
+          off[i * 3] = vel[i * 3] * amount;
+          off[i * 3 + 1] = vel[i * 3 + 1] * amount;
+          off[i * 3 + 2] = vel[i * 3 + 2] * amount;
+        }
+      };
+      apply(groupGold); apply(groupRed); apply(groupGift);
+      if (p >= 1) {
+        explodeState.t = 0;
+        explodeState.phase = santaSfxDone ? 'return' : 'hold';
+      }
+    } else if (explodeState.phase === 'hold') {
+      const applyHold = (group) => {
+        if (!group) return; ensureExplodeArrays(group);
+        const ud = group.geometry.userData, vel = ud.explodeVel, off = ud.explodeOffset;
+        const n = group.geometry.attributes.position.count;
+        for (let i = 0; i < n; i++) { off[i * 3] = vel[i * 3]; off[i * 3 + 1] = vel[i * 3 + 1]; off[i * 3 + 2] = vel[i * 3 + 2]; }
+      };
+      applyHold(groupGold); applyHold(groupRed); applyHold(groupGift);
+      if (santaSfxDone) { explodeState.phase = 'return'; explodeState.t = 0; }
+    } else {
+      const p = Math.min(1, explodeState.t / explodeState.durationIn);
+      const amount = 1 - easeInCubic(p);
+      const apply = (group) => {
+        if (!group) return;
+        ensureExplodeArrays(group);
+        const ud = group.geometry.userData;
+        const vel = ud.explodeVel, off = ud.explodeOffset;
+        const n = group.geometry.attributes.position.count;
+        for (let i = 0; i < n; i++) {
+          off[i * 3] = vel[i * 3] * amount;
+          off[i * 3 + 1] = vel[i * 3 + 1] * amount;
+          off[i * 3 + 2] = vel[i * 3 + 2] * amount;
+        }
+      };
+      apply(groupGold); apply(groupRed); apply(groupGift);
+      if (p >= 1) {
+        explodeState.active = false;
+        if (groupGold) clearExplodeOffsets(groupGold);
+        if (groupRed) clearExplodeOffsets(groupRed);
+        if (groupGift) clearExplodeOffsets(groupGift);
+        // One-time hard reset of positions to base layout to avoid drift
+        resetPositionsToBase(groupGold);
+        resetPositionsToBase(groupRed);
+        resetPositionsToBase(groupGift);
+        // Slow down and settle the rotation slightly when done
+        explodeRot.roll *= 0.6; explodeRot.yaw *= 0.6; explodeRot.pitch *= 0.6;
+      }
+    }
+  }
+
+  // Progress heart blend amount towards target each frame
+  if (heartState.amount !== heartState.target) {
+    const step = Math.min(1, (dt / Math.max(0.0001, heartState.duration)));
+    if (heartState.target > heartState.amount) {
+      heartState.amount = Math.min(heartState.target, heartState.amount + step);
+    } else {
+      heartState.amount = Math.max(heartState.target, heartState.amount - step);
+    }
+  }
+
+  updateParticleGroup(groupGold, 'gold', time);
+  updateParticleGroup(groupRed, 'red', time);
+  updateParticleGroup(groupGift, 'gift', time);
+
+  if (starMesh) {
+    starMesh.rotation.z -= 0.02;
+    starMesh.material.opacity = 0.7 + 0.3 * Math.sin(time * 5);
+  }
+
+  // Update snow on desktop only (throttle when lowperf)
+  const lowPerf = document.body.classList.contains('lowperf');
+  const updateSnowThisFrame = !lowPerf || (frameCounter % 2 === 0);
+  if (snowPoints && snowGeo && updateSnowThisFrame) {
+    const pos = snowGeo.attributes.position.array;
+    for (let i = 0; i < snowVelocities.length; i++) {
+      pos[i * 3 + 1] -= snowVelocities[i] * (1 + 0.2 * Math.sin(time + i));
+      pos[i * 3] += 0.05 * Math.sin(time * 0.5 + i);
+      if (pos[i * 3 + 1] < -10) {
+        pos[i * 3 + 1] = 110;
+        pos[i * 3] = (Math.random() - 0.5) * 160;
+        pos[i * 3 + 2] = (Math.random() - 0.5) * 160;
+      }
+    }
+    snowGeo.attributes.position.needsUpdate = true;
+  }
+  // Update falling gifts on all devices (throttle when lowperf)
+  const updateGiftsThisFrame = !lowPerf || (frameCounter % 2 === 0);
+  if (giftSprites && giftSprites.length && updateGiftsThisFrame) {
+    for (let i = 0; i < giftSprites.length; i++) {
+      const spr = giftSprites[i];
+      spr.position.y -= giftVel[i] * (1 + 0.1 * Math.sin(time * 0.8 + i));
+      spr.position.x += 0.05 * Math.sin(time * 0.7 + i);
+      spr.material.rotation += lowPerf ? 0.006 : 0.01;
+      if (spr.position.y < -8) resetGift(spr, false);
+    }
+  }
+  // Santa fly-by (lightweight update every frame)
+  updateSanta(dt, time);
+
+  // Update Santa image: fade in, hold until SFX ends, then fade out
+  if (santaImageSprite) {
+    santaImageLife += dt;
+    let alpha = 0;
+    if (santaImagePhase === 'fadein') {
+      alpha = Math.min(1, santaImageLife / SANTA_FADE_IN);
+      if (alpha >= 1) { santaImagePhase = 'hold'; santaImageLife = 0; }
+    } else if (santaImagePhase === 'hold') {
+      alpha = 1;
+      if (santaSfxDone) { santaImagePhase = 'fadeout'; santaImageLife = 0; }
+    } else if (santaImagePhase === 'fadeout') {
+      alpha = 1 - Math.min(1, santaImageLife / SANTA_FADE_OUT);
+      if (alpha <= 0) {
+        scene.remove(santaImageSprite);
+        try { santaImageSprite.material.map && santaImageSprite.material.map.dispose(); } catch {}
+        try { santaImageSprite.material.dispose(); } catch {}
+        santaImageSprite = null;
+        santaImagePhase = 'idle';
+      }
+    }
+    if (santaImageSprite) {
+      santaImageSprite.material.opacity = Math.max(0, Math.min(1, alpha));
+      // Spin Santa image with sphere rotation for visual coherence
+      if (explodeState.active) {
+        santaImageSprite.material.rotation = explodeRot.roll;
+      }
+    }
+  }
+  // Fireplace flicker
+  updateFireplace(time, lowPerf);
+  renderer.render(scene, camera);
+}
+
+/* ================= INPUT ROTATION ================= */
+let isDragging = false, lastX = 0;
+renderer.domElement.style.touchAction = 'none';
+let downX = 0, downY = 0, downTime = 0;
+renderer.domElement.addEventListener('pointerdown', (e) => { isDragging = true; lastX = e.clientX; downX = e.clientX; downY = e.clientY; downTime = performance.now(); });
+window.addEventListener('pointermove', (e) => { if (!isDragging) return; const dx = e.clientX - lastX; lastX = e.clientX; rotVelocity = (dx / window.innerWidth) * 6.0; });
+window.addEventListener('pointerup', (e) => {
+  const upTime = performance.now();
+  const dist = Math.hypot(e.clientX - downX, e.clientY - downY);
+  const duration = upTime - downTime;
+  // Treat as click if minimal movement and short press
+  if (dist < 6 && duration < 400) {
+    // Star burst takes priority, then sleigh switches track, else gift modal
+    if (pickStarAtClientPos(e.clientX, e.clientY)) {
+      triggerExplode();
+    } else if (pickSleighAtClientPos(e.clientX, e.clientY)) {
+      switchRandomTrack();
+    } else if (pickFireplaceAtClientPos(e.clientX, e.clientY)) {
+      openInputModal();
+    } else {
+      pickGiftAtClientPos(e.clientX, e.clientY);
+    }
+  }
+  isDragging = false;
+});
+window.addEventListener('pointercancel', () => { isDragging = false; });
+
+// Pause animations and audio when tab is hidden; resume when visible
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    isPaused = true;
+    try { cancelAnimationFrame(rafId); } catch {}
+    // Reset time accumulator to avoid big dt jump on resume
+    lastTime = 0;
+    // Pause background music if playing
+    audioWasPlayingBeforeHide = !!(audioEl && !audioEl.paused);
+    if (audioWasPlayingBeforeHide) { try { audioEl.pause(); } catch {} }
+    // Pause Santa SFX if in progress
+    santaWasPlayingBeforeHide = !!(santaSfxEl && !santaSfxEl.paused && !santaSfxDone);
+    if (santaWasPlayingBeforeHide) { try { santaSfxEl.pause(); } catch {} }
+  } else {
+    isPaused = false;
+    // Resume background music if it was playing
+    if (audioWasPlayingBeforeHide && audioEl) { audioEl.play().catch(() => {}); }
+    // Resume Santa SFX if it was playing and hasn’t ended
+    if (santaWasPlayingBeforeHide && santaSfxEl && !santaSfxDone) { santaSfxEl.play().catch(() => {}); }
+    // Restart the animation loop
+    animate();
+  }
+});
+
+/* ================= INIT ================= */
+initTree();
+createDecorations();
+loadGreetings();
+// Ensure web fonts are applied to the canvas title once loaded
+if (document.fonts && typeof document.fonts.ready?.then === 'function') {
+  document.fonts.ready.then(() => {
+    try { updateTitleTexture(); } catch {}
+  });
+}
+if (!isMobile) {
+  createSnow();
+}
+// Create falling gifts for all devices
+createFallingGifts();
+// Create Santa fly-by
+createSanta();
+// Replace sleigh texture with external image if available
+loadExternalSleighTexture();
+// Create fireplace next to the tree
+createFireplace();
+  // Replace fireplace facade with external image if available
+  loadExternalFireplaceTexture('lo_suoi.png');
+// Heart mode will only be enabled after user inputs 25/12 via the modal
+animate();
+
+/* ================= RESIZE ================= */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>
