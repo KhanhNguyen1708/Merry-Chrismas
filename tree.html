@@ -1046,6 +1046,8 @@ function setupInputModal() {
       if (!validateBday(val)) { if (errEl) errEl.textContent = 'Ngày sinh không đúng định dạng dd/mm.'; return; }
       try { localStorage.setItem('xmas_bday', val); } catch {}
       try { localStorage.removeItem('xmas_name'); } catch {}
+      // Hide name banner if switching to date input
+      hideNameBanner();
       // Show random greeting in the same modal as gifts
       showGreeting(getRandomGreeting());
       // If it's 25/12, enable heart mode
@@ -1059,6 +1061,8 @@ function setupInputModal() {
       try { localStorage.removeItem('xmas_bday'); } catch {}
       // Show personalized greeting in the same modal as gifts
       showGreeting('Chúc mừng giáng sinh, ' + val);
+      // Show banner above title with personalized message
+      try { showNameBanner(val); } catch {}
       // Name input does not enforce heart mode
       setHeartEnabled(false);
     }
@@ -1708,6 +1712,75 @@ function updateTitleTexture() {
   const tex = new THREE.CanvasTexture(canvas);
   titleMesh.material.map = tex;
   titleMesh.material.needsUpdate = true;
+}
+
+/* ================= NAME BANNER ABOVE TITLE ================= */
+let nameBannerMesh = null;
+let nameBannerTimerId = null;
+const NAME_BANNER_OFFSET_Y = 16; // higher above the title
+function createNameBannerTexture(text) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  // Background glow
+  const grd = ctx.createRadialGradient(512, 128, 10, 512, 128, 180);
+  grd.addColorStop(0, 'rgba(255, 211, 107, 0.18)');
+  grd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Rounded box
+  const r = 28; const pad = 26;
+  ctx.fillStyle = 'rgba(10, 12, 24, 0.82)';
+  ctx.strokeStyle = 'rgba(255, 211, 107, 0.65)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  const x0 = pad, y0 = pad, w = canvas.width - pad * 2, h = canvas.height - pad * 2;
+  ctx.moveTo(x0 + r, y0);
+  ctx.arcTo(x0 + w, y0, x0 + w, y0 + h, r);
+  ctx.arcTo(x0 + w, y0 + h, x0, y0 + h, r);
+  ctx.arcTo(x0, y0 + h, x0, y0, r);
+  ctx.arcTo(x0, y0, x0 + w, y0, r);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // Text
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 68px "Dancing Script", "Merriweather", serif';
+  const gradText = ctx.createLinearGradient(300, 0, 724, 0);
+  gradText.addColorStop(0, '#fff6d1');
+  gradText.addColorStop(0.6, '#ffd36b');
+  gradText.addColorStop(1, '#f5b64a');
+  ctx.fillStyle = gradText;
+  ctx.shadowColor = 'rgba(255,211,107,0.35)';
+  ctx.shadowBlur = 18;
+  ctx.fillText(text, 512, 128);
+  return new THREE.CanvasTexture(canvas);
+}
+function showNameBanner(name) {
+  const text = 'Chúc mừng Giáng Sinh, ' + name;
+  const tex = createNameBannerTexture(text);
+  if (!nameBannerMesh) {
+    nameBannerMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(54, 12),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+    );
+    const baseY = titleMesh ? (titleMesh.position.y + NAME_BANNER_OFFSET_Y) : (50 + TITLE_Y_OFFSET + NAME_BANNER_OFFSET_Y);
+    nameBannerMesh.position.set(0, baseY, 0);
+    nameBannerMesh.renderOrder = 3;
+    scene.add(nameBannerMesh);
+  } else {
+    nameBannerMesh.material.map = tex;
+    nameBannerMesh.material.needsUpdate = true;
+    nameBannerMesh.visible = true;
+    // Keep it above the title
+    const baseY = titleMesh ? (titleMesh.position.y + NAME_BANNER_OFFSET_Y) : (50 + TITLE_Y_OFFSET + NAME_BANNER_OFFSET_Y);
+    nameBannerMesh.position.y = baseY;
+  }
+  // Auto-hide after 10 seconds
+  if (nameBannerTimerId) { try { clearTimeout(nameBannerTimerId); } catch {} nameBannerTimerId = null; }
+  nameBannerTimerId = setTimeout(() => { hideNameBanner(); nameBannerTimerId = null; }, 10000);
+}
+function hideNameBanner() {
+  if (nameBannerTimerId) { try { clearTimeout(nameBannerTimerId); } catch {} nameBannerTimerId = null; }
+  if (nameBannerMesh) nameBannerMesh.visible = false;
 }
 
 /* ================= SNOW (Desktop only) ================= */
