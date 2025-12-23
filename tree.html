@@ -338,6 +338,25 @@
       cursor: pointer;
     }
 
+    /* ===== Snow Toggle Control ===== */
+    #snow-toggle {
+      position: fixed;
+      right: 12px; /* align to same side as music controls */
+      bottom: 12px;
+      z-index: 11;
+      display: block;
+    }
+    #snow-toggle button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 999px;
+      background: #303447;
+      color: #ffd36b;
+      font-weight: 700;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+      cursor: pointer;
+    }
+
     /* Prevent canvas jump when soft keyboard opens */
     body.kb-open canvas { position: fixed !important; inset: 0; }
     @supports (height: 100svh) {
@@ -394,6 +413,11 @@
 <!-- Music toggle control (pause/resume) -->
 <div id="music-control" aria-hidden="true">
   <button id="music-toggle-btn" type="button">Tắt nhạc</button>
+  </div>
+
+<!-- Snow toggle control -->
+<div id="snow-toggle" aria-hidden="false">
+  <button id="snow-toggle-btn" type="button">Tắt tuyết</button>
   </div>
 
 <!-- Inline greeting banner -->
@@ -775,6 +799,7 @@ const textures = {
 let playlist = [];
 let audioEl = null;
 let audioUnlocked = false;
+let snowEnabled = true;
 
 async function loadPlaylist() {
   let text = '';
@@ -872,10 +897,14 @@ window.addEventListener('DOMContentLoaded', async () => {
       audioEl.pause();
     }
   });
+  // Snow toggle
+  const snowBtn = document.getElementById('snow-toggle-btn');
+  if (snowBtn) snowBtn.addEventListener('click', () => { toggleSnow(); });
   // Load and start
   await loadPlaylist();
   const src = pickRandomTrack();
   if (src) { setupAudio(src); tryAutoplay(); }
+  updateSnowToggleUI();
 });
 
 function showMusicControl() {
@@ -897,6 +926,25 @@ function updateMusicToggleUI() {
   }
   showMusicControl();
   btn.textContent = audioEl.paused ? 'Bật nhạc' : 'Tắt nhạc';
+}
+
+// ===== Snow Toggle =====
+function updateSnowToggleUI() {
+  const btn = document.getElementById('snow-toggle-btn');
+  if (!btn) return;
+  btn.textContent = snowEnabled ? 'Tắt tuyết' : 'Bật tuyết';
+}
+function toggleSnow() {
+  snowEnabled = !snowEnabled;
+  if (!snowEnabled) {
+    if (snowPoints) { try { scene.remove(snowPoints); } catch {} }
+    try { snowGeo && snowGeo.dispose && snowGeo.dispose(); } catch {}
+    try { snowPoints && snowPoints.material && snowPoints.material.dispose && snowPoints.material.dispose(); } catch {}
+    snowPoints = null; snowGeo = null; snowVelocities = [];
+  } else {
+    createSnow();
+  }
+  updateSnowToggleUI();
 }
 
 // Switch to a random track immediately (user gesture safe)
