@@ -1785,7 +1785,7 @@ function hideNameBanner() {
 
 /* ================= SNOW (Desktop only) ================= */
 function createSnow() {
-  const count = 500;
+  const count = isMobile ? 220 : 500; // lighter on phones
   const positions = new Float32Array(count * 3);
   snowVelocities = new Float32Array(count);
   for (let i = 0; i < count; i++) {
@@ -1800,7 +1800,7 @@ function createSnow() {
   snowGeo = new THREE.BufferGeometry();
   snowGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   const mat = new THREE.PointsMaterial({
-    size: 1.8,
+    size: isMobile ? 2.2 : 1.8,
     map: textures.snow,
     transparent: true,
     opacity: 0.9,
@@ -2267,9 +2267,8 @@ if (document.fonts && typeof document.fonts.ready?.then === 'function') {
     try { updateTitleTexture(); } catch {}
   });
 }
-if (!isMobile) {
-  createSnow();
-}
+// Enable snow on all devices (lighter density on mobile)
+createSnow();
 // Create falling gifts for all devices
 createFallingGifts();
 // Create Santa fly-by
