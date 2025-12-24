@@ -414,7 +414,7 @@
 <div id="olaf-video-modal" aria-hidden="true">
   <div id="olaf-video-card">
     <button id="olaf-video-close" type="button">×</button>
-    <video id="olaf-video" preload="metadata" controls></video>
+    <video id="olaf-video" preload="metadata" playsinline controls></video>
   </div>
   </div>
 
@@ -1299,11 +1299,25 @@ function updateOlaf(time) {
 
 /* ================= Olaf Video Control ================= */
 let audioWasPlayingBeforeOlaf = false;
+function finishOlafVideo() {
+  const modal = document.getElementById('olaf-video-modal');
+  const video = document.getElementById('olaf-video');
+  if (!video || !modal) return;
+  // Resume background music only when video finishes
+  if (audioWasPlayingBeforeOlaf && audioEl) {
+    audioEl.play().catch(() => {});
+  }
+  audioWasPlayingBeforeOlaf = false;
+  try { video.currentTime = 0; } catch {}
+  hideOlafVideo();
+}
 function showOlafVideo() {
   const modal = document.getElementById('olaf-video-modal');
   const video = document.getElementById('olaf-video');
   if (!modal || !video) return;
   if (!video.src) video.src = 'olaf.mp4';
+  // Ensure inline playback on mobile (Safari/iOS)
+  try { video.setAttribute('playsinline', 'true'); video.playsInline = true; } catch {}
   // Pause background music while video plays
   audioWasPlayingBeforeOlaf = !!(audioEl && !audioEl.paused);
   if (audioWasPlayingBeforeOlaf) {
@@ -1318,15 +1332,15 @@ function showOlafVideo() {
         try { audioEl.pause(); } catch {}
       }
     });
-    video.addEventListener('ended', () => {
-      // Resume background music only when video finishes
-      if (audioWasPlayingBeforeOlaf && audioEl) {
-        audioEl.play().catch(() => {});
+    video.addEventListener('ended', () => { finishOlafVideo(); });
+    // iOS Safari fullscreen video end
+    video.addEventListener('webkitendfullscreen', () => { finishOlafVideo(); });
+    // Fallback: some mobile browsers fire pause at end
+    video.addEventListener('pause', () => {
+      const dur = video.duration;
+      if (isFinite(dur) && dur > 0 && video.currentTime >= dur - 0.2) {
+        finishOlafVideo();
       }
-      audioWasPlayingBeforeOlaf = false;
-      // Reset video and close modal automatically
-      try { video.currentTime = 0; } catch {}
-      hideOlafVideo();
     });
     video._olafHandlersBound = true;
   }
@@ -1740,7 +1754,7 @@ let santaSprite = null;
 let sleighTrailSprite = null;
 let santaGlowSprite = null;
 const santaSpeed = 6; // world units per second
-const santaBaseY = 50; // fly lower, just below the title
+const santaBaseY = 36; // fly lower so it stays below the title
 function createSanta() {
   const mat = new THREE.SpriteMaterial({
     map: textures.sleigh,
