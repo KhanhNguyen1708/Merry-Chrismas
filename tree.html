@@ -363,6 +363,42 @@
       /* Ensure modal always fits stable viewport on mobile */
       #input-modal { min-height: 100svh; }
     }
+
+    /* ===== Olaf Video Modal ===== */
+    #olaf-video-modal {
+      position: fixed;
+      inset: 0;
+      display: none; /* toggled to flex */
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+    }
+    #olaf-video-modal[aria-hidden="false"] { display: flex; }
+    #olaf-video-card {
+      width: min(92vw, 720px);
+      color: #fff;
+      position: relative;
+      border-radius: 16px;
+      padding: 14px 14px 10px;
+      background: linear-gradient(180deg, rgba(15,16,22,0.92), rgba(11,12,18,0.92));
+      box-shadow: 0 20px 48px rgba(0,0,0,0.55), 0 0 50px rgba(255,211,107,0.12) inset;
+      border: 1px solid rgba(255,211,107,0.28);
+      animation: modalPop 220ms ease-out;
+      overflow: hidden;
+    }
+    #olaf-video-card video {
+      width: 100%; height: auto; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    }
+    #olaf-video-close {
+      position:absolute; right: 10px; top: 10px; width: 34px; height: 34px; border-radius: 10px;
+      display:grid; place-items:center; border:1px solid rgba(255,255,255,0.12); color:#fff; background: rgba(255,255,255,0.06);
+      cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .06s ease; font-weight:900;
+    }
+    #olaf-video-close:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,211,107,0.45); color:#ffd36b; }
+    #olaf-video-close:active { transform: translateY(1px); }
   </style>
 </head>
 <body>
@@ -372,6 +408,14 @@
   <div class="bg-bokeh"></div>
   <div class="bg-ground"></div>
   <!-- aurora & vignette remain via body::before/::after -->
+  </div>
+
+<!-- Olaf video modal -->
+<div id="olaf-video-modal" aria-hidden="true">
+  <div id="olaf-video-card">
+    <button id="olaf-video-close" type="button">×</button>
+    <video id="olaf-video" preload="metadata" controls></video>
+  </div>
   </div>
 
 <!-- Greeting modal -->
@@ -1202,6 +1246,317 @@ let santaWasPlayingBeforeHide = false;
 const raycaster = new THREE.Raycaster();
 const pointerNDC = new THREE.Vector2();
 
+/* ================= SNOWMAN SHOW ================= */
+let snowmanGroup = null;
+let snowmanClickable = null;
+let snowmanParts = { head: null, body: null, leftArm: null, rightArm: null, pointLight: null };
+let snowmanAnimating = false;
+let snowmanAnimTime = 0;
+const SNOWMAN_ANIM_DURATION = 7.0; // seconds
+let snowBallMeshes = [];
+let snowBallVel = [];
+let snowBallBounds = null;
+let sparkles = [];
+
+/* ================= OLAF IMAGE SPRITE ================= */
+let olafSprite = null;
+function createOlafSprite(path = 'olafpic.png') {
+  const loader = new THREE.TextureLoader();
+  loader.load(
+    path,
+    (tex) => {
+      try {
+        const maxAniso = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+        tex.anisotropy = maxAniso;
+        tex.colorSpace = THREE.SRGBColorSpace;
+      } catch {}
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.NormalBlending, opacity: 1.0 });
+      olafSprite = new THREE.Sprite(mat);
+      const groundY = -CONFIG.treeHeight / 2 + TREE_Y_OFFSET;
+      const posX = isMobile ? -20 : -30; // move closer to center
+      const posZ = 0;
+      // Scale height, preserve aspect
+      const targetH = isMobile ? 22 : 30;
+      const aspect = tex.image && tex.image.height ? (tex.image.width / tex.image.height) : 1;
+      olafSprite.scale.set(targetH * aspect, targetH, 1);
+      olafSprite.position.set(posX, groundY + 12, posZ);
+      olafSprite.renderOrder = 2;
+      scene.add(olafSprite);
+    },
+    undefined,
+    () => {
+      // If image fails to load, do nothing silently
+    }
+  );
+}
+function updateOlaf(time) {
+  if (!olafSprite) return;
+  // Gentle bobbing and subtle tilt for life
+  const baseY = olafSprite.position.y;
+  olafSprite.position.y = baseY + Math.sin(time * 1.2) * 0.15;
+  olafSprite.material.rotation = Math.sin(time * 0.8) * 0.02;
+}
+
+/* ================= Olaf Video Control ================= */
+let audioWasPlayingBeforeOlaf = false;
+function showOlafVideo() {
+  const modal = document.getElementById('olaf-video-modal');
+  const video = document.getElementById('olaf-video');
+  if (!modal || !video) return;
+  if (!video.src) video.src = 'olaf.mp4';
+  // Pause background music while video plays
+  audioWasPlayingBeforeOlaf = !!(audioEl && !audioEl.paused);
+  if (audioWasPlayingBeforeOlaf) {
+    try { audioEl.pause(); } catch {}
+  }
+  // Bind handlers once
+  if (!video._olafHandlersBound) {
+    video.addEventListener('play', () => {
+      // Ensure music stays paused in case of late autoplay
+      if (audioEl && !audioEl.paused) {
+        audioWasPlayingBeforeOlaf = true;
+        try { audioEl.pause(); } catch {}
+      }
+    });
+    video.addEventListener('ended', () => {
+      // Resume background music only when video finishes
+      if (audioWasPlayingBeforeOlaf && audioEl) {
+        audioEl.play().catch(() => {});
+      }
+      audioWasPlayingBeforeOlaf = false;
+      // Reset video and close modal automatically
+      try { video.currentTime = 0; } catch {}
+      hideOlafVideo();
+    });
+    video._olafHandlersBound = true;
+  }
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
+  try { video.currentTime = 0; video.play().catch(() => {}); } catch {}
+}
+function hideOlafVideo() {
+  const modal = document.getElementById('olaf-video-modal');
+  const video = document.getElementById('olaf-video');
+  if (!modal || !video) return;
+  try { video.pause(); } catch {}
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden', 'true');
+}
+window.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('olaf-video-modal');
+  const closeBtn = document.getElementById('olaf-video-close');
+  if (closeBtn) closeBtn.addEventListener('click', hideOlafVideo);
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) hideOlafVideo(); });
+});
+
+function createSnowman() {
+  const groundY = -CONFIG.treeHeight / 2 + TREE_Y_OFFSET;
+  const posX = isMobile ? -25 : -38;
+  const posZ = 0;
+  snowmanGroup = new THREE.Group();
+  snowmanGroup.position.set(posX, groundY + 8, posZ);
+
+  const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x222222, shininess: 30 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(6.5, 24, 24), whiteMat);
+  body.position.set(0, 0, 0);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(4, 24, 24), whiteMat);
+  head.position.set(0, 8, 0);
+
+  // Santa hat (dark hat with gold band)
+  const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 0.8, 24), new THREE.MeshBasicMaterial({ color: 0x1e1f2a }));
+  hatBrim.position.set(0, 12.5, 0);
+  const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 3.2, 24), new THREE.MeshBasicMaterial({ color: 0x1e1f2a }));
+  hatTop.position.set(0, 14.2, 0);
+  const hatBand = new THREE.Mesh(new THREE.TorusGeometry(3.1, 0.2, 12, 24), new THREE.MeshBasicMaterial({ color: 0xffd36b }));
+  hatBand.position.set(0, 14.2, 0); hatBand.rotation.x = Math.PI / 2;
+
+  // Blue scarf
+  const scarf = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.35, 16, 28), new THREE.MeshBasicMaterial({ color: 0x1e7fcb }));
+  scarf.position.set(0, 8, 0); scarf.rotation.x = Math.PI / 2;
+  const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.6, 0.2), new THREE.MeshBasicMaterial({ color: 0x1e7fcb }));
+  scarfTail.position.set(-1.2, 6.6, 0.8); scarfTail.rotation.z = 0.2;
+
+  // Arms (sticks)
+  const armMat = new THREE.MeshBasicMaterial({ color: 0x6d4c41 });
+  const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 5.5, 12), armMat);
+  leftArm.position.set(-4.6, 5.4, 0); leftArm.rotation.z = Math.PI / 4;
+  const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 5.5, 12), armMat);
+  rightArm.position.set(4.6, 5.4, 0); rightArm.rotation.z = -Math.PI / 3.5;
+
+  // Face: eyes, nose, mouth
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), eyeMat);
+  eyeL.position.set(-1.2, 9.6, 3.4);
+  const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), eyeMat);
+  eyeR.position.set(1.2, 9.6, 3.4);
+  const noseMat = new THREE.MeshBasicMaterial({ color: 0xf5a042 });
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.6, 16), noseMat);
+  nose.position.set(0, 9.2, 3.8); nose.rotation.x = Math.PI / 2;
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.06, 8, 24, Math.PI), eyeMat);
+  mouth.position.set(0, 8.8, 3.3); mouth.rotation.x = Math.PI / 2;
+
+  snowmanGroup.add(body, head, hatBrim, hatTop, hatBand, scarf, scarfTail, leftArm, rightArm, eyeL, eyeR, nose, mouth);
+  scene.add(snowmanGroup);
+
+  // Invisible hit target for raycasting
+  const hitMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, depthWrite: false, depthTest: false });
+  snowmanClickable = new THREE.Mesh(new THREE.BoxGeometry(14, 18, 10), hitMat);
+  snowmanClickable.position.set(posX, groundY + 9, posZ);
+  scene.add(snowmanClickable);
+
+  // Warm point light (enabled during animation)
+  const pLight = new THREE.PointLight(0xffd36b, 0.0, 30);
+  pLight.position.set(posX - 2, groundY + 11, posZ + 6);
+  scene.add(pLight);
+
+  snowmanParts = { head, body, leftArm, rightArm, pointLight: pLight };
+}
+
+function pickSnowmanAtClientPos(clientX, clientY) {
+  if (!snowmanClickable) return false;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const intersects = raycaster.intersectObjects([snowmanClickable], false);
+  return intersects && intersects.length > 0;
+}
+
+function startSnowmanShow() {
+  if (!snowmanGroup) return;
+  snowmanAnimating = true;
+  snowmanAnimTime = 0;
+  if (snowmanParts.pointLight) snowmanParts.pointLight.intensity = 1.0;
+  createSnowBalls();
+}
+
+function createSnowBalls() {
+  removeSnowBalls();
+  const groundY = -CONFIG.treeHeight / 2 + TREE_Y_OFFSET;
+  const xCenter = snowmanGroup ? snowmanGroup.position.x : (isMobile ? -25 : -38);
+  const zCenter = 0;
+  snowBallBounds = { minX: xCenter - 12, maxX: xCenter + 12, floorY: groundY + 2.0 };
+  const matBase = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x222222, shininess: 20 });
+  for (let i = 0; i < 3; i++) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), matBase.clone());
+    m.position.set(xCenter - 6 + i * 6, groundY + 6 + Math.random() * 2, zCenter);
+    snowBallMeshes.push(m);
+    snowBallVel.push(new THREE.Vector3((Math.random() * 3 - 1.5), (Math.random() * 4 + 4), (Math.random() * 0.6 - 0.3)));
+    scene.add(m);
+  }
+}
+function removeSnowBalls() {
+  for (const m of snowBallMeshes) {
+    try { scene.remove(m); m.geometry.dispose(); m.material.dispose(); } catch {}
+  }
+  snowBallMeshes = []; snowBallVel = []; snowBallBounds = null;
+}
+
+function spawnSparkle(pos) {
+  const count = 20;
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = pos.x + (Math.random() - 0.5) * 1.5;
+    positions[i * 3 + 1] = pos.y + (Math.random() - 0.5) * 1.5;
+    positions[i * 3 + 2] = pos.z + (Math.random() - 0.5) * 1.5;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({ size: 2.0, map: textures.snow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1.0 });
+  const points = new THREE.Points(geo, mat);
+  points.userData.life = 0;
+  scene.add(points);
+  sparkles.push(points);
+}
+
+function updateSparkles(dt) {
+  for (let i = sparkles.length - 1; i >= 0; i--) {
+    const p = sparkles[i];
+    p.userData.life += dt;
+    p.material.opacity = Math.max(0, 1 - p.userData.life / 0.6);
+    if (p.userData.life > 0.6) {
+      scene.remove(p);
+      try { p.geometry.dispose(); p.material.dispose(); } catch {}
+      sparkles.splice(i, 1);
+    }
+  }
+}
+
+function updateSnowBalls(dt) {
+  if (!snowBallMeshes.length || !snowBallBounds) return;
+  const g = -9.0; // gravity
+  const bounce = 0.78;
+  const wallBounce = 0.9;
+  const r = 1.8;
+  for (let i = 0; i < snowBallMeshes.length; i++) {
+    const m = snowBallMeshes[i];
+    const v = snowBallVel[i];
+    v.y += g * dt;
+    m.position.x += v.x * dt;
+    m.position.y += v.y * dt;
+    m.position.z += v.z * dt;
+    // floor
+    if (m.position.y - r < snowBallBounds.floorY) {
+      m.position.y = snowBallBounds.floorY + r;
+      v.y = Math.abs(v.y) * bounce;
+      spawnSparkle(m.position);
+    }
+    // side walls
+    if (m.position.x - r < snowBallBounds.minX) {
+      m.position.x = snowBallBounds.minX + r;
+      v.x = Math.abs(v.x) * wallBounce;
+      spawnSparkle(m.position);
+    } else if (m.position.x + r > snowBallBounds.maxX) {
+      m.position.x = snowBallBounds.maxX - r;
+      v.x = -Math.abs(v.x) * wallBounce;
+      spawnSparkle(m.position);
+    }
+  }
+  // ball-ball collisions
+  for (let i = 0; i < snowBallMeshes.length; i++) {
+    for (let j = i + 1; j < snowBallMeshes.length; j++) {
+      const a = snowBallMeshes[i], b = snowBallMeshes[j];
+      const dx = b.position.x - a.position.x;
+      const dy = b.position.y - a.position.y;
+      const dz = b.position.z - a.position.z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0.0001;
+      const minDist = r * 2;
+      if (dist < minDist) {
+        const nx = dx / dist, ny = dy / dist, nz = dz / dist;
+        const overlap = (minDist - dist) * 0.5;
+        a.position.x -= nx * overlap; a.position.y -= ny * overlap; a.position.z -= nz * overlap;
+        b.position.x += nx * overlap; b.position.y += ny * overlap; b.position.z += nz * overlap;
+        const va = snowBallVel[i], vb = snowBallVel[j];
+        const vaN = va.x * nx + va.y * ny + va.z * nz;
+        const vbN = vb.x * nx + vb.y * ny + vb.z * nz;
+        const tmp = vaN;
+        va.x += (vbN - tmp) * nx; va.y += (vbN - tmp) * ny; va.z += (vbN - tmp) * nz;
+        vb.x += (tmp - vbN) * nx; vb.y += (tmp - vbN) * ny; vb.z += (tmp - vbN) * nz;
+        spawnSparkle({ x: (a.position.x + b.position.x) / 2, y: (a.position.y + b.position.y) / 2, z: (a.position.z + b.position.z) / 2 });
+      }
+    }
+  }
+}
+
+function updateSnowman(dt, time) {
+  if (!snowmanAnimating || !snowmanGroup) return;
+  snowmanAnimTime += dt;
+  // dance motions
+  snowmanGroup.rotation.y = Math.sin(time * 2.0) * 0.12;
+  if (snowmanParts.head) snowmanParts.head.rotation.x = Math.sin(time * 3.0) * 0.08;
+  if (snowmanParts.leftArm) snowmanParts.leftArm.rotation.z = Math.PI / 4 + Math.sin(time * 4.2) * 0.5;
+  if (snowmanParts.rightArm) snowmanParts.rightArm.rotation.z = -Math.PI / 3.5 - Math.sin(time * 4.2) * 0.5;
+  if (snowmanParts.pointLight) snowmanParts.pointLight.intensity = 0.8 + 0.4 * (0.5 + 0.5 * Math.sin(time * 2.4));
+  // balls + sparkles
+  updateSnowBalls(dt);
+  updateSparkles(dt);
+  if (snowmanAnimTime > SNOWMAN_ANIM_DURATION) {
+    snowmanAnimating = false;
+    if (snowmanParts.pointLight) snowmanParts.pointLight.intensity = 0.0;
+    removeSnowBalls();
+  }
+}
+
 /* ================= FIREPLACE ================= */
 let fireplaceGroup = null;
 let fireSprite = null;
@@ -1953,6 +2308,17 @@ function pickSleighAtClientPos(clientX, clientY) {
   return intersects && intersects.length > 0;
 }
 
+// Detect Olaf image click to open video
+function pickOlafAtClientPos(clientX, clientY) {
+  if (!olafSprite) return false;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const intersects = raycaster.intersectObjects([olafSprite], false);
+  return intersects && intersects.length > 0;
+}
+
 // Detect fireplace click to open the input modal
 function pickFireplaceAtClientPos(clientX, clientY) {
   if (!fireFrontMesh && !fireHitMesh) return false;
@@ -2251,6 +2617,8 @@ function animate() {
   }
   // Fireplace flicker
   updateFireplace(time, lowPerf);
+  // Olaf sprite subtle motion
+  updateOlaf(time);
   renderer.render(scene, camera);
 }
 
@@ -2271,8 +2639,12 @@ window.addEventListener('pointerup', (e) => {
       triggerExplode();
     } else if (pickSleighAtClientPos(e.clientX, e.clientY)) {
       switchRandomTrack();
+    } else if (pickOlafAtClientPos(e.clientX, e.clientY)) {
+      showOlafVideo();
     } else if (pickFireplaceAtClientPos(e.clientX, e.clientY)) {
       openInputModal();
+    } else if (pickSnowmanAtClientPos(e.clientX, e.clientY)) {
+      startSnowmanShow();
     } else {
       pickGiftAtClientPos(e.clientX, e.clientY);
     }
@@ -2327,6 +2699,8 @@ loadExternalSleighTexture();
 createFireplace();
   // Replace fireplace facade with external image if available
   loadExternalFireplaceTexture('lo_suoi.png');
+// Place Olaf image sprite on the left of the tree
+createOlafSprite('olafpic.png');
 // Heart mode will only be enabled after user inputs 25/12 via the modal
 animate();
 
